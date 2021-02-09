@@ -53,3 +53,24 @@ main {
     align-items: center;
     margin-top: 0.25rem;
 }
+
+#share-modal .modal-container {
+    border-radius: 20px;
+}
+
+#share-modal .content {
+    display: flex;
+    flex-direction: column;
+}
+
+#share-modal .content p {
+    text-align: center;
+}
+
+#share-modal button {
+    border-radius: 20px;
+}
+
+#share-modal button:hover {
+    background-color:lavender;
+}
