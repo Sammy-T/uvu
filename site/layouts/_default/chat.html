@@ -19,21 +19,21 @@
 
     <!-- User info -->
     <section class="navbar-section">
-        <figure class="avatar" data-initial="UN" style="background-color: #5755d9;"></figure>
+        <figure class="avatar" data-initial="UN"></figure>
     </section>
 </header>
 {{end}}
 
 {{ define "main" }}
 <!-- Room Actions -->
-<section>
+<section id="room-actions">
     <button class="btn btn-primary">Create Room</button>
     <button class="btn btn-primary">Join Room</button>
-    <button class="btn btn-primary">Hang up</button>
+    <button class="btn btn-primary" disabled>Hang up</button>
 </section>
 
-<!-- Chat Options -->
-<section>
+<!-- Stream Options -->
+<section id="stream-options">
     <div class="form-group">
         <label class="form-radio form-inline">
             <input type="radio" name="video-type" id="camera" value="camera" checked>
@@ -46,6 +46,32 @@
     </div>
 </section>
 
-<!-- Chat Area -->
-<section></section>
+<!-- Communication Area -->
+<section id="comm-area" class="columns">
+    <!-- Stream(s) -->
+    <div class="column col-9 col-md-12">
+        <div class="columns col-gapless">
+            <div class="column">
+                <video id="local-video" autoplay playsinline controls></video>
+            </div>
+            <div class="column">
+                <video id="remote-video" autoplay playsinline controls></video>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat -->
+    <div id="chat-area" class="column col-3 col-md-12 bg-secondary">
+        <div id="messages-container" class="bg-secondary"></div>
+        <textarea id="message" class="form-input" name="message" placeholder="Type your message"></textarea>
+        <button id="send" class="btn btn-primary float-right" disabled>Send</button>
+        <!-- <small>Shortcut: Control+Enter</small> -->
+    </div>
+</section>
+
+<!-- Help Info -->
+<details>
+    <summary>Help</summary>
+    <p>Some helpful info</p>
+</details>
 {{ end }}

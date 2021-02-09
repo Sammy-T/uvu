@@ -1,3 +1,36 @@
 header {
     padding: 1em;
+    border-bottom: 1px solid #5755d9;
+}
+
+main {
+    padding-top: 2em;
+}
+
+video {
+    width: 100%;
+    height: auto;
+}
+
+#stream-options {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+#chat-area {
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+}
+
+#messages-container {
+    width: 100%;
+    min-height: 12rem;
+}
+
+#message {
+    resize: none;
+}
+
+#send {
+    margin-top: 0.25rem;
 }
