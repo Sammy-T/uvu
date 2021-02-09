@@ -33,18 +33,27 @@
 </section>
 
 <!-- Stream Options -->
-<section id="stream-options">
+<form id="stream-options">
     <div class="form-group">
-        <label class="form-radio form-inline">
-            <input type="radio" name="video-type" id="camera" value="camera" checked>
+        <label class="form-switch form-inline">
+            <input type="checkbox" id="audio-enabled" name="audio-enabled" checked>
+            <i class="form-icon"></i>Audio
+        </label>
+        <label class="form-switch form-inline">
+            <input type="checkbox" id="video-enabled" name="video-enabled">
+            <i class="form-icon"></i>Video
+        </label>
+
+        <label class="form-radio form-inline" id="camera-label">
+            <input type="radio" name="video-type" id="camera" value="camera" checked disabled>
             <i class="form-icon"></i>Camera
         </label>
         <label class="form-radio form-inline">
-            <input type="radio" name="video-type" id="screen-share" value="screen-share">
+            <input type="radio" name="video-type" id="screen-share" value="screen-share" disabled>
             <i class="form-icon"></i>Screen Share
         </label>
     </div>
-</section>
+</form>
 
 <!-- Communication Area -->
 <section id="comm-area" class="columns">

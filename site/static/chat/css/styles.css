@@ -12,6 +12,10 @@ main {
     margin-bottom: 0.5rem;
 }
 
+#camera-label {
+    margin-left: 1rem;
+}
+
 #stream-area {
     min-height: 100%;
     display: flex;
