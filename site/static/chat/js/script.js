@@ -17,6 +17,11 @@ function init() {
             document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('active'));
         });
     });
+
+    // Enable/Disable video options elements according to the video enabled element
+    document.querySelector('#video-enabled').addEventListener('change', function(event) {
+        document.querySelectorAll('.video-option').forEach(optionEl => optionEl.disabled = !this.checked);
+    });
 }
 
 init();
