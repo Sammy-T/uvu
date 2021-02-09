@@ -7,14 +7,22 @@ main {
     padding-top: 2em;
 }
 
-video {
-    width: 100%;
-    height: auto;
-}
-
 #stream-options {
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
+}
+
+#streams {
+    min-height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+#streams video {
+    flex-grow: 1;
+    max-width: 50%;
 }
 
 #chat-area {
