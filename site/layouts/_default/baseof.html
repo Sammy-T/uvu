@@ -5,6 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <base href="{{ if getenv `CONTEXT` }}{{ cond (eq `production` (getenv `CONTEXT`)) (getenv `URL`) (getenv `DEPLOY_PRIME_URL`) }}{{ else }}{{ $.Site.BaseURL }}{{ end }}">
+  
   <title>{{ $.Site.Title }}</title>
 
   <!-- Spectre -->
@@ -12,7 +13,7 @@
   <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
   <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
 
-  {{ block "page-styles" . }}{{ end }}
+  {{ block "page-head" . }}{{ end }}
 
   {{ $stylesheet := .Site.Data.webpack.main }}
   {{ with $stylesheet.css }}
