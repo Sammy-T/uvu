@@ -7,6 +7,13 @@
   <base href="{{ if getenv `CONTEXT` }}{{ cond (eq `production` (getenv `CONTEXT`)) (getenv `URL`) (getenv `DEPLOY_PRIME_URL`) }}{{ else }}{{ $.Site.BaseURL }}{{ end }}">
   <title>{{ $.Site.Title }}</title>
 
+  <!-- Spectre -->
+  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
+
+  {{ block "page-styles" . }}{{ end }}
+
   {{ $stylesheet := .Site.Data.webpack.main }}
   {{ with $stylesheet.css }}
     <link href="{{ relURL . }}" rel="stylesheet">
@@ -14,12 +21,13 @@
 </head>
 
 <body>
+  <div class="container">
+    {{ block "header" . }}{{ partial "header" . }}{{ end }}
 
-  {{ block "header" . }}{{ partial "header" . }}{{end}}
+    {{ block "main" . }}{{end}}
 
-  {{ block "main" . }}{{end}}
-
-  {{ block "footer" . }}{{ partial "footer" . }}{{end}}
+    {{ block "footer" . }}{{ partial "footer" . }}{{ end }}
+  </div>
 
   {{ $script := .Site.Data.webpack.main }}
   {{ with $script.js }}

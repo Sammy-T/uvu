@@ -1,3 +1,29 @@
+{{ define "page-styles" }}
+<link rel="stylesheet" href="{{ `/chat/css/styles.css` | relURL }}">
+{{ end }}
+
+{{ define "header" }}
+<header class="navbar">
+    <section class="navbar-section">
+        <a href="{{ `/` | relURL }}" class="navbar-brand mr-2">Pearmo</a>
+    </section>
+
+    <!-- Room id -->
+    <section class="navbar-center">
+        <div class="input-group input-inline">
+            <!-- <span class="input-group-addon">Room Id:</span> -->
+            <input type="text" class="form-input" placeholder="id">
+            <button class="btn btn-primary input-group-btn">Share</button>
+        </div>
+    </section>
+
+    <!-- User info -->
+    <section class="navbar-section">
+        <figure class="avatar" data-initial="UN" style="background-color: #5755d9;"></figure>
+    </section>
+</header>
+{{end}}
+
 {{ define "main" }}
 <h1>I need to build the chat page</h1>
 {{ end }}
