@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="{{ `/chat/css/styles.css` | relURL }}">
 {{ end }}
 
-{{ define "header" }}
+{{ define "nav" }}
 <header class="navbar">
     <section class="navbar-section">
         <a href="{{ `/` | relURL }}" class="navbar-brand mr-2">Pearmo</a>
@@ -25,5 +25,27 @@
 {{end}}
 
 {{ define "main" }}
-<h1>I need to build the chat page</h1>
+<!-- Room Actions -->
+<section>
+    <button class="btn btn-primary">Create Room</button>
+    <button class="btn btn-primary">Join Room</button>
+    <button class="btn btn-primary">Hang up</button>
+</section>
+
+<!-- Chat Options -->
+<section>
+    <div class="form-group">
+        <label class="form-radio form-inline">
+            <input type="radio" name="video-type" id="camera" value="camera" checked>
+            <i class="form-icon"></i>Camera
+        </label>
+        <label class="form-radio form-inline">
+            <input type="radio" name="video-type" id="screen-share" value="screen-share">
+            <i class="form-icon"></i>Screen Share
+        </label>
+    </div>
+</section>
+
+<!-- Chat Area -->
+<section></section>
 {{ end }}

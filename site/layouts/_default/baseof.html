@@ -21,13 +21,15 @@
 </head>
 
 <body>
-  <div class="container">
-    {{ block "header" . }}{{ partial "header" . }}{{ end }}
+  {{ block "nav" . }}{{ end }}
 
+  {{ block "header" . }}{{ partial "header" . }}{{ end }}
+
+  <main class="container grid-lg">
     {{ block "main" . }}{{end}}
-
-    {{ block "footer" . }}{{ partial "footer" . }}{{ end }}
   </div>
+
+  {{ block "footer" . }}{{ partial "footer" . }}{{ end }}
 
   {{ $script := .Site.Data.webpack.main }}
   {{ with $script.js }}
