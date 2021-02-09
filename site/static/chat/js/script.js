@@ -18,8 +18,32 @@ function init() {
         });
     });
 
+    const audioEnabledCheck = document.querySelector('#audio-enabled');
+    const videoEnabledCheck = document.querySelector('#video-enabled');
+
+    // Show/Hide the stream area if either stream option is enabled
+    function adjustUiToStreamOpts() {
+        const streamArea = document.querySelector('#stream-area');
+        const chatArea = document.querySelector('#chat-area');
+
+        if(audioEnabledCheck.checked || videoEnabledCheck.checked) {
+            streamArea.style.display = 'flex';
+            chatArea.classList.remove('col-12');
+            chatArea.classList.add('col-3');
+        }else{
+            streamArea.style.display = 'none';
+            chatArea.classList.remove('col-3');
+            chatArea.classList.add('col-12');
+        }
+    }
+
+    audioEnabledCheck.addEventListener('change', function(event) {
+        adjustUiToStreamOpts();
+    });
+
     // Enable/Disable video options elements according to the video enabled element
-    document.querySelector('#video-enabled').addEventListener('change', function(event) {
+    videoEnabledCheck.addEventListener('change', function(event) {
+        adjustUiToStreamOpts();
         document.querySelectorAll('.video-option').forEach(optionEl => optionEl.disabled = !this.checked);
     });
 }
