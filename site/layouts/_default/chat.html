@@ -1,7 +1,7 @@
 {{ define "page-head" }}
 <link rel="stylesheet" href="{{ `/chat/css/styles.css` | relURL }}">
 
-<script src="{{ `/chat/js/script.js` | relURL }}"></script>
+<script src="{{ `/chat/js/script.js` | relURL }}" defer></script>
 {{ end }}
 
 {{ define "nav" }}
@@ -15,13 +15,13 @@
         <div class="input-group input-inline">
             <span class="input-group-addon">Room ID:</span>
             <input type="text" class="form-input" placeholder="Joinable room id">
-            <button class="btn btn-primary input-group-btn">Share</button>
+            <button id="share-id-btn" class="btn btn-primary input-group-btn">Share</button>
         </div>
     </section>
 
     <!-- User info -->
     <section class="navbar-section">
-        <figure class="avatar" data-initial="UN"></figure>
+        <figure id="user-avatar" class="avatar" data-initial="UN"></figure>
     </section>
 </header>
 {{end}}
@@ -85,7 +85,7 @@
 
 <!-- Share Modal -->
 <div id="share-modal" class="modal modal-sm">
-    <a href="#close" class="modal-overlay" aria-label="Close"></a>
+    <a href="#close" class="modal-overlay close-modal" aria-label="Close"></a>
     <div class="modal-container">
         <div class="modal-body">
             <div class="content">
@@ -100,10 +100,10 @@
 
 <!-- Create Username Modal -->
 <div id="username-modal" class="modal modal-sm">
-    <a href="#close" class="modal-overlay" aria-label="Close"></a>
+    <a href="#close" class="modal-overlay close-modal" aria-label="Close"></a>
     <div class="modal-container">
         <div class="modal-header">
-            <a href="#close" class="btn btn-clear float-right" aria-label="Close"></a>
+            <a href="#close" class="btn btn-clear float-right close-modal" aria-label="Close"></a>
             <div class="modal-title h5">Create a username</div>
         </div>
 
@@ -117,7 +117,7 @@
 
         <div class="modal-footer">
             <button id="create-username" class="btn btn-primary" disabled>Create</button>
-            <a class="btn btn-link" href="#close" aria-label="Close">Close</a>
+            <a class="btn btn-link close-modal" href="#close" aria-label="Close">Close</a>
         </div>
     </div>
 </div>
