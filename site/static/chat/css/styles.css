@@ -12,7 +12,7 @@ main {
     margin-bottom: 0.5rem;
 }
 
-#streams {
+#stream-area {
     min-height: 100%;
     display: flex;
     flex-wrap: wrap;
@@ -20,7 +20,7 @@ main {
     align-items: center;
 }
 
-#streams video {
+#stream-area video {
     flex-grow: 1;
     max-width: 50%;
 }
@@ -28,17 +28,24 @@ main {
 #chat-area {
     padding-top: 0.4rem;
     padding-bottom: 0.4rem;
+
+    display: flex;
+    flex-direction: column;
 }
 
 #messages-container {
     width: 100%;
     min-height: 12rem;
+    flex-grow: 1;
 }
 
 #message {
     resize: none;
 }
 
-#send {
+#send-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-top: 0.25rem;
 }
