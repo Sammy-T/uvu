@@ -43,9 +43,26 @@ main {
     max-height: 40vh;
     flex-grow: 1;
     overflow: auto;
+    padding-right: 0.5em;
 }
 
-#message {
+.message {
+    padding: 0.15em 0;
+}
+
+.message p {
+    margin: 0;
+}
+
+.msg-self {
+    text-align: right;
+}
+
+.msg-info {
+    padding: 0.5em 0;
+}
+
+#message-input {
     resize: none;
 }
 

@@ -68,13 +68,32 @@
     <!-- Chat -->
     <div id="chat-area" class="column col-3 col-md-12 bg-secondary">
         <div id="messages-container"></div>
-        <textarea id="message" class="form-input" name="message" placeholder="Type your message"></textarea>
+        <textarea id="message-input" class="form-input" name="message" placeholder="Message"></textarea>
         <div id="send-area">
             <span></span>
             <small class="text-primary">Shortcut: Control+Enter</small>
             <button id="send" class="btn btn-primary" disabled>Send</button>
         </div>
     </div>
+
+    <!-- Message templates -->
+    <template id="template-msg">
+        <div class="message">
+            <p class="msg-username text-primary text-tiny">Username</p>
+            <p class="msg-content">Message content</p>
+        </div>
+    </template>
+    <template id="template-msg-self">
+        <div class="message msg-self">
+            <p class="msg-username text-primary text-tiny">Username</p>
+            <p class="msg-content">Message content</p>
+        </div>
+    </template>
+    <template id="template-msg-info">
+        <div class="message msg-info">
+            <p class="msg-content text-tiny text-center text-muted">Message content</p>
+        </div>
+    </template>
 </section>
 
 <!-- Help Info -->
