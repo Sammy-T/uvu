@@ -13,12 +13,17 @@
   <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
   <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
 
-  {{ block "page-head" . }}{{ end }}
-
   {{ $stylesheet := .Site.Data.webpack.main }}
   {{ with $stylesheet.css }}
     <link href="{{ relURL . }}" rel="stylesheet">
   {{ end }}
+
+  {{ $script := .Site.Data.webpack.main }}
+  {{ with $script.js }}
+    <script src="{{ relURL . }}" defer></script>
+  {{ end }}
+
+  {{ block "page-head" . }}{{ end }}
 </head>
 
 <body>
@@ -31,11 +36,5 @@
   </div>
 
   {{ block "footer" . }}{{ partial "footer" . }}{{ end }}
-
-  {{ $script := .Site.Data.webpack.main }}
-  {{ with $script.js }}
-    <script src="{{ relURL . }}"></script>
-  {{ end }}
 </body>
-
 </html>
