@@ -1,4 +1,10 @@
+const roomIdInput = document.querySelector('#room-id-input');
+
 function init() {
+    // Populate the room id field if it's included in the url
+    const searchParams = new URLSearchParams(location.search);
+    if(searchParams.has('room')) roomIdInput.value = searchParams.get('room');
+
     // Show Share modal when share button is clicked
     document.querySelector('#share-id-btn').addEventListener('click', event => {
         document.querySelector('#share-modal').classList.add('active');
