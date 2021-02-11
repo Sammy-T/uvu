@@ -12,6 +12,7 @@ const roomIdInput = document.querySelector('#room-id-input');
 const createRoomBtn = document.querySelector('#create-room');
 const joinRoomBtn = document.querySelector('#join-room');
 const hangUpBtn = document.querySelector('#hang-up');
+const userAvatar = document.querySelector('#user-avatar');
 const usernameModal = document.querySelector('#username-modal');
 
 async function createRoom() {
@@ -28,7 +29,7 @@ function initModals() {
     });
 
     // Show Create Username modal when avatar is clicked
-    document.querySelector('#user-avatar').addEventListener('click', event => {
+    userAvatar.addEventListener('click', event => {
         usernameModal.classList.add('active');
     });
 
@@ -56,6 +57,8 @@ function initModals() {
     function createUsername() {
         username = document.querySelector('#username').value;
 
+        userAvatar.dataset.initial = username.substr(0,2).toUpperCase(); // Set the avatar initials
+
         usernameModal.classList.remove('active');
         
         // If the modal was triggered by another action,
@@ -71,7 +74,7 @@ function initModals() {
 
     // Validate the username input and display the validation state
     usernameField.addEventListener('input', function(event) {
-        const isValidLength = this.value.length > 5;
+        const isValidLength = this.value.length >= 5;
         const isValidUsername = usernameExp.test(this.value);
 
         // Remove previous validation state
