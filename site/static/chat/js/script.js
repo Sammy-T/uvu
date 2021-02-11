@@ -3,16 +3,21 @@ const db = firebase.firestore();
 let roomRef = null;
 let connectionsRef = null;
 
-let localUid = null;
+let createdRoom = false;
+
+let localUid = Math.random().toString(36).slice(-8);
 let username = null;
 
 let modalAction = null;
 
 const roomIdInput = document.querySelector('#room-id-input');
+const userAvatar = document.querySelector('#user-avatar');
 const createRoomBtn = document.querySelector('#create-room');
 const joinRoomBtn = document.querySelector('#join-room');
 const hangUpBtn = document.querySelector('#hang-up');
-const userAvatar = document.querySelector('#user-avatar');
+const audioEnabledCheck = document.querySelector('#audio-enabled');
+const videoEnabledCheck = document.querySelector('#video-enabled');
+const videoOptions = document.querySelectorAll('.video-option');
 const usernameModal = document.querySelector('#username-modal');
 
 async function createRoom() {
@@ -20,6 +25,101 @@ async function createRoom() {
     connectionsRef = roomRef.collection('connections');
 
     roomIdInput.value = roomRef.id;
+
+    // Create room doc w/ local uid and created time
+    const roomData = {
+        participants: [localUid],
+        created: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    const res = await roomRef.set(roomData);
+    console.log(`Created room. id: ${roomRef.id}`, res);
+
+    createdRoom = true;
+
+    //// TODO: Add negotiator
+
+    // Update the UI
+    createRoomBtn.disabled = true;
+    joinRoomBtn.disabled = true;
+    hangUpBtn.disabled = false;
+    videoOptions.forEach(optionEl => optionEl.disabled = true);
+}
+
+async function joinRoom() {
+    // Check for a room id to join
+    if(!roomIdInput.value) {
+        console.warn('No room id to join.');
+        return;
+    }
+
+    roomRef = db.collection('pearmo-rooms').doc(roomIdInput.value);
+    connectionsRef = roomRef.collection('connections');
+
+    const doc = await roomRef.get();
+
+    if(!doc.exists) {
+        console.warn('No room found.');
+        return;
+    }
+
+    // Retrieve the room data
+    const roomData = doc.data();
+    console.log('Room', doc.id, roomData);
+
+    // Check for uid overlap (This should rarely need to be called if ever)
+    while(roomData.participants.includes(localUid)) {
+        localUid = Math.random().toString(36).slice(-8);
+        console.warn(`Uid conflict. New uid created: ${localUid}`);
+    }
+
+    // Update the room document
+    const updateData = {
+        participants: firebase.firestore.FieldValue.arrayUnion(localUid)
+    };
+
+    const res = await roomRef.update(updateData);
+    console.log('Updated room.', res);
+
+    //// TODO: Add negotiator / create offers
+
+    // Update the UI
+    createRoomBtn.disabled = true;
+    joinRoomBtn.disabled = true;
+    hangUpBtn.disabled = false;
+    videoOptions.forEach(optionEl => optionEl.disabled = true);
+}
+
+function hangUp() {
+    cleanUpDb();
+
+    // Update the UI
+    createRoomBtn.disabled = false;
+    joinRoomBtn.disabled = false;
+    hangUpBtn.disabled = true;
+    videoOptions.forEach(optionEl => optionEl.disabled = !videoEnabledCheck.checked);
+}
+
+async function cleanUpDb() {
+    const roomDoc = await roomRef.get();
+
+    if(roomDoc.exists) {
+        const participants = roomDoc.data().participants;
+
+        // If there are more than 2 participants left, remove localUid from room doc
+        // Otherwise, delete the room doc
+        if(participants.length > 2) {
+            const updateData = {
+                participants: firebase.firestore.FieldValue.arrayRemove(localUid)
+            };
+
+            const res = await roomRef.update(updateData);
+            console.log('Deleted uid from room.', res);
+        }else{
+            const res = await roomRef.delete();
+            console.log('Deleted room.', res);
+        }
+    }
 }
 
 function initModals() {
@@ -67,6 +167,9 @@ function initModals() {
             case 'createRoom':
                 createRoom();
                 break;
+            case 'joinRoom':
+                joinRoom();
+                break;
         }
 
         modalAction = null;
@@ -97,6 +200,7 @@ function initModals() {
     });
 
     createUsernameBtn.addEventListener('click', createUsername);
+    hangUpBtn.addEventListener('click', hangUp);
 }
 
 function init() {
@@ -105,9 +209,6 @@ function init() {
     if(searchParams.has('room')) roomIdInput.value = searchParams.get('room');
 
     initModals();
-
-    const audioEnabledCheck = document.querySelector('#audio-enabled');
-    const videoEnabledCheck = document.querySelector('#video-enabled');
 
     // Show/Hide the stream area if either stream option is enabled
     function adjustUiToStreamOpts() {
@@ -129,10 +230,11 @@ function init() {
         adjustUiToStreamOpts();
     });
 
+    //// TODO: Handle video options when enabling video after already connected
     // Enable/Disable video options elements according to the video enabled element
     videoEnabledCheck.addEventListener('change', function(event) {
         adjustUiToStreamOpts();
-        document.querySelectorAll('.video-option').forEach(optionEl => optionEl.disabled = !this.checked);
+        videoOptions.forEach(optionEl => optionEl.disabled = !this.checked);
     });
 
     createRoomBtn.addEventListener('click', event => {
@@ -141,6 +243,15 @@ function init() {
             usernameModal.classList.add('active');
         }else{
             createRoom();
+        }
+    });
+
+    joinRoomBtn.addEventListener('click', event => {
+        if(!username) {
+            modalAction = 'joinRoom';
+            usernameModal.classList.add('active');
+        }else{
+            joinRoom();
         }
     });
 }
