@@ -45,9 +45,12 @@ function initModals() {
 
     // Create Username modal
     const usernameField = document.querySelector('#username');
+    const usernameHint = document.querySelector('#username-modal .form-input-hint');
     const createUsernameBtn = document.querySelector('#create-username');
 
-    const usernameExp = /^\w+$/; // Match single word alpha-numeric characters including underscores
+    const usernameExp = /^\w+$/; // Match alpha-numeric characters including underscores
+
+    const validationMsg = 'Username can only contain letters, numbers, or underscores.';
 
     // Set the username and close the modal
     function createUsername() {
@@ -71,12 +74,16 @@ function initModals() {
         const isValidLength = this.value.length > 5;
         const isValidUsername = usernameExp.test(this.value);
 
-        this.classList.remove('is-success', 'is-error'); // Remove previous validation state
+        // Remove previous validation state
+        this.classList.remove('is-success', 'is-error');
+        usernameHint.innerText = '';
 
         // Display input validation if the length requirement has been met
         if(isValidLength) {
             const validationClass = isValidUsername ? 'is-success' : 'is-error';
             this.classList.add(validationClass);
+
+            usernameHint.innerText = !isValidUsername ? validationMsg : '';
         }
 
         createUsernameBtn.disabled = !(isValidLength && isValidUsername);
