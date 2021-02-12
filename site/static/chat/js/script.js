@@ -43,6 +43,8 @@ const msgInfoTemplate = document.querySelector('#template-msg-info');
 
 const usernameModal = document.querySelector('#username-modal');
 
+const usernameField = document.querySelector('#username');
+
 async function createRoom() {
     roomRef = db.collection('pearmo-rooms').doc();
     connectionsRef = roomRef.collection('connections');
@@ -438,7 +440,8 @@ function initModals() {
 
     // Show Create Username modal when avatar is clicked
     userAvatar.addEventListener('click', event => {
-        usernameModal.classList.add('active'); //// TODO: Request input focus?
+        usernameModal.classList.add('active');
+        usernameField.focus(); // Request input focus
     });
 
     // Hide all modals when a close element is clicked 
@@ -453,7 +456,6 @@ function initModals() {
     });
 
     // Create Username modal
-    const usernameField = document.querySelector('#username');
     const usernameHint = document.querySelector('#username-modal .form-input-hint');
     const createUsernameBtn = document.querySelector('#create-username');
 
@@ -548,6 +550,7 @@ function init() {
         if(!username) {
             modalAction = 'createRoom';
             usernameModal.classList.add('active');
+            usernameField.focus(); // Request input focus
         }else{
             createRoom();
         }
@@ -557,6 +560,7 @@ function init() {
         if(!username) {
             modalAction = 'joinRoom';
             usernameModal.classList.add('active');
+            usernameField.focus(); // Request input focus
         }else{
             joinRoom();
         }
