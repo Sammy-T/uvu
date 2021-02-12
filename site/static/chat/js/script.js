@@ -12,6 +12,8 @@ let connectionsRef = null;
 let localUid = Math.random().toString(36).slice(-8);
 let username = null;
 
+let unsub = null;
+
 const offerTimes = {};
 const answerTimes = {};
 
@@ -22,12 +24,23 @@ let modalAction = null;
 
 const roomIdInput = document.querySelector('#room-id-input');
 const userAvatar = document.querySelector('#user-avatar');
+
 const createRoomBtn = document.querySelector('#create-room');
 const joinRoomBtn = document.querySelector('#join-room');
 const hangUpBtn = document.querySelector('#hang-up');
+
 const audioEnabledCheck = document.querySelector('#audio-enabled');
 const videoEnabledCheck = document.querySelector('#video-enabled');
 const videoOptions = document.querySelectorAll('.video-option');
+
+const msgContainer = document.querySelector('#messages-container');
+const msgInput = document.querySelector('#message-input');
+const sendBtn = document.querySelector('#send');
+
+const msgTemplate = document.querySelector('#template-msg');
+const msgSelfTemplate = document.querySelector('#template-msg-self');
+const msgInfoTemplate = document.querySelector('#template-msg-info');
+
 const usernameModal = document.querySelector('#username-modal');
 
 async function createRoom() {
@@ -103,7 +116,7 @@ async function joinRoom() {
 
 function addNegotiator() {
     //// TODO: Store listener's unsub and call when unneeded
-    connectionsRef.onSnapshot(snapshot => {
+    unsub = connectionsRef.onSnapshot(snapshot => {
         snapshot.forEach(async doc => {
             const data = doc.data();
             console.log(doc.id, '=>', doc.data());
@@ -145,7 +158,7 @@ async function createOffer(participant) {
     // Create a data channel on the connection
     // (A channel or stream must be present for ICE candidate events to fire)
     const dataChannel = peerConnection.createDataChannel('messages');
-    dataChannel[participant] = dataChannel; // Map the data channel to the participant
+    dataChannels[participant] = dataChannel; // Map the data channel to the participant
 
     registerDataChannelListeners(participant, dataChannel);
 
@@ -279,19 +292,70 @@ function registerPeerConnectionListeners(participant, peerConnection) {
 function registerDataChannelListeners(participant, dataChannel) {
     dataChannel.addEventListener('open', event => {
         console.log(participant, 'Data channel open');
+
+        if(sendBtn.disabled) sendBtn.disabled = false; // Enable the send button if it's disabled
     });
 
     dataChannel.addEventListener('close', event => {
         console.log(participant, 'Data channel close');
+
+        // Check for any remaining available data channels
+        for(const participant in dataChannels) {
+            const channel = dataChannels[participant];
+            const channelStatus = channel.readyState;
+            console.log(participant, 'channel status on close', channelStatus);
+
+            // Keep the send button active if an available channel is found
+            if(channelStatus === 'connecting' || channelStatus === 'open') return;
+        }
+
+        sendBtn.disabled = true; // Disable the send button if there are no available data channels
     });
 
     dataChannel.addEventListener('message', event => {
-        console.log(participant, 'Message received: ', event.data);
+        console.log(participant, 'Message received: ', JSON.parse(event.data));
+
+        const message = JSON.parse(event.data);
+
+        // Add the message element to the message container
+        const msgEl = msgTemplate.content.firstElementChild.cloneNode(true);
+        msgEl.querySelector('.msg-username').innerText = message.username;
+        msgEl.querySelector('.msg-content').innerText = message.content;
+
+        msgContainer.appendChild(msgEl);
+        msgEl.scrollIntoView();
     });
+}
+
+function sendMsg() {
+    const message = {
+        username: username,
+        content: msgInput.value
+    };
+
+    // Send message to all data channels
+    for(participant in dataChannels) {
+        const dataChannel = dataChannels[participant];
+        dataChannel.send(JSON.stringify(message));
+    }
+
+    // Add the message element to the message container
+    const msgEl = msgSelfTemplate.content.firstElementChild.cloneNode(true);
+    msgEl.querySelector('.msg-username').innerText = username;
+    msgEl.querySelector('.msg-content').innerText = msgInput.value;
+
+    msgContainer.appendChild(msgEl);
+    msgEl.scrollIntoView();
+
+    msgInput.value = ''; // Clear the message input field
 }
 
 function hangUp() {
     //// TODO: Cleanup unsubs
+    if(unsub) {
+        unsub();
+        unsub = null;
+    }
 
     cleanUpDb();
 
@@ -374,7 +438,7 @@ function initModals() {
 
     // Show Create Username modal when avatar is clicked
     userAvatar.addEventListener('click', event => {
-        usernameModal.classList.add('active');
+        usernameModal.classList.add('active'); //// TODO: Request input focus?
     });
 
     // Hide all modals when a close element is clicked 
@@ -444,7 +508,6 @@ function initModals() {
     });
 
     createUsernameBtn.addEventListener('click', createUsername);
-    hangUpBtn.addEventListener('click', hangUp);
 }
 
 function init() {
@@ -497,6 +560,13 @@ function init() {
         }else{
             joinRoom();
         }
+    });
+
+    hangUpBtn.addEventListener('click', hangUp);
+    sendBtn.addEventListener('click', sendMsg);
+
+    msgInput.addEventListener('keypress', event => {
+        if(event.code === 'Enter' && event.ctrlKey && !sendBtn.disabled) sendMsg();
     });
 }
 
