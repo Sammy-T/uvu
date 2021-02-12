@@ -41,6 +41,8 @@ const msgTemplate = document.querySelector('#template-msg');
 const msgSelfTemplate = document.querySelector('#template-msg-self');
 const msgInfoTemplate = document.querySelector('#template-msg-info');
 
+const toast = document.querySelector('.toast');
+
 const usernameModal = document.querySelector('#username-modal');
 const shareModal = document.querySelector('#share-modal');
 
@@ -73,7 +75,9 @@ async function createRoom() {
 async function joinRoom() {
     // Check for a room id to join
     if(!roomIdInput.value) {
-        console.warn('No room id to join.');
+        const warning = 'No room id to join';
+        console.warn(warning);
+        popToast('warning', warning);
         return;
     }
 
@@ -83,7 +87,9 @@ async function joinRoom() {
     const doc = await roomRef.get();
 
     if(!doc.exists) {
-        console.warn('No room found.');
+        const warning = 'Room not found';
+        console.warn(warning);
+        popToast('warning', warning);
         return;
     }
 
@@ -433,6 +439,38 @@ async function cleanUpDb() {
     }
 }
 
+function popToast(type, message) {
+    showToast(type, message);
+    setTimeout(hideToast, 2000);
+}
+
+function showToast(type, message) {
+    toast.innerText = message;
+
+    let classes = ['toast-active'];
+
+    switch(type) {
+        case 'success':
+            classes.push('toast-success');
+            break;
+
+        case 'warning':
+            classes.push('toast-warning');
+            break;
+
+        case 'error':
+            classes.push('toast-error');
+            break;
+    }
+
+    toast.classList.add(...classes);
+}
+
+function hideToast() {
+    const classes = ['toast-active', 'toast-primary', 'toast-success', 'toast-warning', 'toast-error'];
+    toast.classList.remove(...classes);
+}
+
 function initUsernameModal() {
     // Show Create Username modal when avatar is clicked
     userAvatar.addEventListener('click', event => {
@@ -499,7 +537,10 @@ function initUsernameModal() {
 function initShareModal() {
     // Show Share modal when share button is clicked
     document.querySelector('#share-id-btn').addEventListener('click', event => {
-        if(!roomIdInput.value) return;
+        if(!roomIdInput.value) {
+            popToast('warning', 'No room id to share');
+            return;
+        }
 
         document.querySelector('#share-room-id').innerText = `Room ID: ${roomIdInput.value}`;
         shareModal.classList.add('active');

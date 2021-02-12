@@ -73,6 +73,19 @@ main {
     margin-top: 0.25rem;
 }
 
+.toast {
+    width: auto;
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+}
+
+.toast-active {
+    display: block;
+}
+
 #share-modal .modal-container {
     border-radius: 20px;
 }
