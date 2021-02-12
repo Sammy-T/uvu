@@ -466,9 +466,9 @@ async function cleanUpDb() {
     if(roomDoc.exists) {
         const participants = roomDoc.data().participants;
 
-        // If there are more than 2 participants left, remove localUid from room doc
+        // If there's more than one participant left, remove localUid from room doc
         // Otherwise, delete the room doc
-        if(participants.length > 2) {
+        if(participants.length > 1) {
             const updateData = {
                 participants: firebase.firestore.FieldValue.arrayRemove(localUid)
             };
