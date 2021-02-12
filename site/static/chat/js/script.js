@@ -20,6 +20,8 @@ const answerTimes = {};
 const peerConnections = {};
 const dataChannels = {};
 
+const participantNames = {};
+
 let modalAction = null;
 
 const roomIdInput = document.querySelector('#room-id-input');
@@ -302,17 +304,40 @@ function registerDataChannelListeners(participant, dataChannel) {
     dataChannel.addEventListener('open', event => {
         console.log(participant, 'Data channel open');
 
+        const message = {
+            type: 'info',
+            category: 'hello',
+            username: username,
+            content: `Connected to ${username}`
+        };
+
+        // Send message to all data channels
+        for(participant in dataChannels) {
+            const dataChannel = dataChannels[participant];
+            dataChannel.send(JSON.stringify(message));
+        }
+
         if(sendBtn.disabled) sendBtn.disabled = false; // Enable the send button if it's disabled
     });
 
     dataChannel.addEventListener('close', event => {
         console.log(participant, 'Data channel close');
 
+        // Show disconnect message
+        const disconnectMsg = `Disconnected from ${participantNames[participant]}`;
+
+        const msgEl = msgInfoTemplate.content.firstElementChild.cloneNode(true);
+        msgEl.querySelector('.msg-content').innerText = disconnectMsg;
+
+        msgContainer.appendChild(msgEl);
+        msgEl.scrollIntoView();
+
+        delete participantNames[participant]; // Remove the participant's username
+
         // Check for any remaining available data channels
         for(const participant in dataChannels) {
             const channel = dataChannels[participant];
             const channelStatus = channel.readyState;
-            console.log(participant, 'channel status on close', channelStatus);
 
             // Keep the send button active if an available channel is found
             if(channelStatus === 'connecting' || channelStatus === 'open') return;
@@ -326,10 +351,27 @@ function registerDataChannelListeners(participant, dataChannel) {
 
         const message = JSON.parse(event.data);
 
+        let template;
+        switch(message.type) {
+            case 'message':
+                template = msgTemplate;
+                break;
+
+            case 'info':
+                if(message.category === 'hello') participantNames[participant] = message.username;
+                template = msgInfoTemplate;
+                break;
+
+            default:
+                console.error('Invalid message type');
+                return;
+        }
+
         // Add the message element to the message container
-        const msgEl = msgTemplate.content.firstElementChild.cloneNode(true);
-        msgEl.querySelector('.msg-username').innerText = message.username;
+        const msgEl = template.content.firstElementChild.cloneNode(true);
         msgEl.querySelector('.msg-content').innerText = message.content;
+
+        if(message.type === 'message') msgEl.querySelector('.msg-username').innerText = message.username;
 
         msgContainer.appendChild(msgEl);
         msgEl.scrollIntoView();
@@ -338,6 +380,7 @@ function registerDataChannelListeners(participant, dataChannel) {
 
 function sendMsg() {
     const message = {
+        type: 'message',
         username: username,
         content: msgInput.value
     };
