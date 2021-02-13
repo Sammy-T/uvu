@@ -658,11 +658,11 @@ function initShareModal() {
 }
 
 function initStreamOptions() {
+    const streamArea = document.querySelector('#stream-area');
+    const chatArea = document.querySelector('#chat-area');
+    
     // Show/Hide the stream area if either stream option is enabled
     function adjustUiToStreamOpts() {
-        const streamArea = document.querySelector('#stream-area');
-        const chatArea = document.querySelector('#chat-area');
-
         if(audioEnabledCheck.checked || videoEnabledCheck.checked) {
             streamArea.style.display = 'flex';
             chatArea.classList.remove('col-12');
