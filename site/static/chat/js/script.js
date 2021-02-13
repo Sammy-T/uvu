@@ -13,6 +13,7 @@ let localUid = Math.random().toString(36).slice(-8);
 let username = null;
 
 let unsub = null;
+const candidateUnsubs = {};
 
 const offerTimes = {};
 const answerTimes = {};
@@ -126,11 +127,9 @@ async function joinRoom() {
 }
 
 function addNegotiator() {
-    //// TODO: Store listener's unsub and call when unneeded
     unsub = connectionsRef.onSnapshot(snapshot => {
         snapshot.forEach(async doc => {
             const data = doc.data();
-            console.log(doc.id, '=>', doc.data());
 
             if(data.from && data.from === localUid && data.answer && (!answerTimes[data.to] || answerTimes[data.to].getTime() != data.answerTime.toDate().getTime())) {
                 console.log('Received new answer.', data.answer, data);
@@ -258,9 +257,8 @@ async function collectIceCandidates(connectionDocRef, participant, peerConnectio
         }
     });
 
-    //// TODO: Map listener's unsub to object and call when unneeded?
     // Listen to signaling channel for remote candidates
-    remoteCandidatesColl.onSnapshot(snapshot => {
+    const candUnsub = remoteCandidatesColl.onSnapshot(snapshot => {
         snapshot.docChanges().forEach(async change => {
             if(change.type === 'added') {
                 const data = change.doc.data();
@@ -274,6 +272,8 @@ async function collectIceCandidates(connectionDocRef, participant, peerConnectio
             }
         });
     });
+
+    candidateUnsubs[participant] = candUnsub;
 }
 
 function registerPeerConnectionListeners(participant, peerConnection) {
@@ -403,10 +403,17 @@ function sendMsg() {
 }
 
 function hangUp() {
-    //// TODO: Cleanup unsubs
+    // Unsubscribe from db listeners
     if(unsub) {
         unsub();
         unsub = null;
+    }
+
+    for(const participant in candidateUnsubs) {
+        const candUnsub = candidateUnsubs[participant];
+        candUnsub();
+
+        delete candidateUnsubs[participant];
     }
 
     cleanUpDb();
