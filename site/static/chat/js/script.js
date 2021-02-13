@@ -4,6 +4,8 @@ const configuration = {
     ]
 };
 
+let constraints = {video: false, audio: false};
+
 const db = firebase.firestore();
 
 let roomRef = null;
@@ -22,6 +24,8 @@ const answerTimes = {};
 const peerConnections = {};
 const dataChannels = {};
 
+let localStream = null;
+
 const participantNames = {};
 
 let modalAction = null;
@@ -36,6 +40,9 @@ const hangUpBtn = document.querySelector('#hang-up');
 const audioEnabledCheck = document.querySelector('#audio-enabled');
 const videoEnabledCheck = document.querySelector('#video-enabled');
 const videoOptions = document.querySelectorAll('.video-option');
+
+const streamArea = document.querySelector('#stream-area');
+const videoTemplate = document.querySelector('#template-video');
 
 const msgContainer = document.querySelector('#messages-container');
 const msgInput = document.querySelector('#message-input');
@@ -525,6 +532,55 @@ async function cleanUpDb() {
     }
 }
 
+async function startStream() {
+    try {
+        // Determine whether we're using the camera or screen share
+        const streamOptsForm = document.querySelector('#stream-options');
+        const streamOptsData = new FormData(streamOptsForm);
+
+        const videoType = streamOptsData.get('video-type');
+
+        switch(videoType) {
+            case 'camera':
+                localStream = await navigator.mediaDevices.getUserMedia(constraints);
+                break;
+
+            case 'screen-share':
+                localStream = await navigator.mediaDevices.getDisplayMedia(constraints);
+                break;
+
+            default:
+                console.error('Invalid video type.', videoType);
+                return;
+        }
+
+        // Add a video element to the stream area
+        const localVideo = videoTemplate.content.firstElementChild.cloneNode(true);
+        localVideo.id = 'local-video';
+        localVideo.muted = true;
+        localVideo.srcObject = localStream;
+
+        streamArea.appendChild(localVideo);
+    } catch (error) {
+        console.error('Error starting stream.', error);
+    }
+}
+
+function stopStream() {
+    localStream.getTracks().forEach(track => track.stop());
+
+    let localVideo = document.querySelector('#local-video');
+
+    // Set srcObject to null to sever the link with the MediaStream so it can be released
+    localVideo.srcObject = null;
+
+    localStream = null;
+
+    // Remove the video element from the stream area and remove the element reference
+    localVideo.remove();
+    localVideo = null;
+}
+
 function popToast(type, message) {
     showToast(type, message);
     setTimeout(hideToast, 2000);
@@ -660,7 +716,7 @@ function initShareModal() {
 function initStreamOptions() {
     const streamArea = document.querySelector('#stream-area');
     const chatArea = document.querySelector('#chat-area');
-    
+
     // Show/Hide the stream area if either stream option is enabled
     function adjustUiToStreamOpts() {
         if(audioEnabledCheck.checked || videoEnabledCheck.checked) {
@@ -676,6 +732,8 @@ function initStreamOptions() {
 
     audioEnabledCheck.addEventListener('change', function(event) {
         adjustUiToStreamOpts();
+
+        constraints.audio = this.checked; // Update the media constraints
     });
 
     //// TODO: Handle video options when enabling video after already connected
@@ -683,6 +741,8 @@ function initStreamOptions() {
     videoEnabledCheck.addEventListener('change', function(event) {
         adjustUiToStreamOpts();
         videoOptions.forEach(optionEl => optionEl.disabled = !this.checked);
+
+        constraints.video = this.checked; // Update the media constraints
     });
 }
 
