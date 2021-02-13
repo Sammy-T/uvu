@@ -657,25 +657,7 @@ function initShareModal() {
     });
 }
 
-function init() {
-    // Populate the room id field if it's included in the url
-    const searchParams = new URLSearchParams(location.search);
-    if(searchParams.has('room')) roomIdInput.value = searchParams.get('room');
-
-    // Hide all modals when a close element is clicked 
-    document.querySelectorAll('.close-modal').forEach(closeElement => {
-        closeElement.addEventListener('click', event => {
-            event.preventDefault();
-
-            modalAction = null;
-
-            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('active'));
-        });
-    });
-
-    initUsernameModal();
-    initShareModal();
-
+function initStreamOptions() {
     // Show/Hide the stream area if either stream option is enabled
     function adjustUiToStreamOpts() {
         const streamArea = document.querySelector('#stream-area');
@@ -702,6 +684,28 @@ function init() {
         adjustUiToStreamOpts();
         videoOptions.forEach(optionEl => optionEl.disabled = !this.checked);
     });
+}
+
+function init() {
+    // Populate the room id field if it's included in the url
+    const searchParams = new URLSearchParams(location.search);
+    if(searchParams.has('room')) roomIdInput.value = searchParams.get('room');
+
+    // Hide all modals when a close element is clicked 
+    document.querySelectorAll('.close-modal').forEach(closeElement => {
+        closeElement.addEventListener('click', event => {
+            event.preventDefault();
+
+            modalAction = null;
+
+            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('active'));
+        });
+    });
+
+    initUsernameModal();
+    initShareModal();
+
+    initStreamOptions();
 
     createRoomBtn.addEventListener('click', event => {
         if(!username) {
@@ -724,8 +728,8 @@ function init() {
     });
 
     hangUpBtn.addEventListener('click', hangUp);
-    sendBtn.addEventListener('click', sendMsg);
 
+    sendBtn.addEventListener('click', sendMsg);
     msgInput.addEventListener('keypress', event => {
         if(event.code === 'Enter' && event.ctrlKey && !sendBtn.disabled) sendMsg();
     });

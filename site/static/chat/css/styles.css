@@ -18,7 +18,7 @@ main {
 
 #stream-area {
     min-height: 100%;
-    display: flex;
+    display: none;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;

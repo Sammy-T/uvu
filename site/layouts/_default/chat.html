@@ -43,7 +43,7 @@
 <form id="stream-options">
     <div class="form-group">
         <label class="form-switch form-inline">
-            <input type="checkbox" id="audio-enabled" name="audio-enabled" checked>
+            <input type="checkbox" id="audio-enabled" name="audio-enabled">
             <i class="form-icon"></i>Audio
         </label>
         <label class="form-switch form-inline">
@@ -66,12 +66,16 @@
 <section id="comm-area" class="columns">
     <!-- Stream(s) -->
     <div id="stream-area" class="column col-9 col-md-12 bg-gray">
-        <video id="local-video" autoplay playsinline controls></video>
-        <video id="remote-video" autoplay playsinline controls></video>
+        <!-- <video id="local-video" autoplay playsinline controls></video>
+        <video id="remote-video" autoplay playsinline controls></video> -->
     </div>
+    <!-- Video template -->
+    <template id="template-video">
+        <video autoplay playsinline controls></video>
+    </template>
 
     <!-- Chat -->
-    <div id="chat-area" class="column col-3 col-md-12 bg-secondary">
+    <div id="chat-area" class="column col-12 col-md-12 bg-secondary">
         <div id="messages-container"></div>
         <textarea id="message-input" class="form-input" name="message" placeholder="Message"></textarea>
         <div id="send-area">
