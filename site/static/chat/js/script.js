@@ -8,6 +8,7 @@ const db = firebase.firestore();
 
 let roomRef = null;
 let connectionsRef = null;
+const connectionDocRefs = {};
 
 let localUid = Math.random().toString(36).slice(-8);
 let username = null;
@@ -173,6 +174,7 @@ async function createOffer(participant) {
     registerDataChannelListeners(participant, dataChannel);
 
     const connectionDocRef = connectionsRef.doc(); // Create connection doc ref
+    connectionDocRefs[participant] = connectionDocRef;
 
     // Start collecting ICE candidates
     await collectIceCandidates(connectionDocRef, participant, peerConnection);
@@ -202,6 +204,8 @@ async function createOffer(participant) {
 }
 
 async function createAnswer(participant, connectionDoc) {
+    connectionDocRefs[participant] = connectionDoc.ref;
+
     // Create a connection
     const peerConnection = new RTCPeerConnection(configuration);
     peerConnection[participant] = peerConnection; // Map the connection to the participant
@@ -244,6 +248,33 @@ async function createAnswer(participant, connectionDoc) {
     console.log(participant, `Updated connection doc with answer. id: ${connectionDoc.ref.id}`, res);
 }
 
+async function renegotiateOffer(participant, peerConnection) {
+    // Create a new offer
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    console.log(participant, 'Renegotiating offer', offer);
+
+    offerTimes[participant] = new Date(); // Map the offer time to the participant
+
+    const connectionData = {
+        from: localUid,
+        to: participant,
+        offerTime: firebase.firestore.Timestamp.fromDate(offerTimes[participant]),
+        offer: {
+            type: offer.type,
+            sdp: offer.sdp
+        },
+        answerTime: null,
+        answer: null
+    };
+
+    const connectionDocRef = connectionDocRefs[participant];
+
+    // Send the offer to the signaling channel
+    const res = await connectionDocRef.set(connectionData, {merge: true});
+    console.log(participant, `Updated connection doc with offer. id: ${connectionDocRef.id}`, res);
+}
+
 async function collectIceCandidates(connectionDocRef, participant, peerConnection) {
     const localCandidatesColl = connectionDocRef.collection(localUid);
     const remoteCandidatesColl = connectionDocRef.collection(participant);
@@ -281,6 +312,7 @@ function registerPeerConnectionListeners(participant, peerConnection) {
         console.log(participant, 'Negotiation needed');
 
         //// TODO: Create new offers to connected participants
+        if(peerConnection.connectionState === 'connected') renegotiateOffer(participant, peerConnection);
     });
 
     peerConnection.addEventListener('icegatheringstatechange', event => {
@@ -424,6 +456,10 @@ function hangUp() {
 
     for(const participant in answerTimes) {
         delete answerTimes[participant];
+    }
+
+    for(const participant in connectionDocRefs) {
+        delete connectionDocRefs[participant];
     }
 
     for(const participant in dataChannels) {
