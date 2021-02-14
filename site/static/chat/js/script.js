@@ -25,6 +25,7 @@ const peerConnections = {};
 const dataChannels = {};
 
 let localStream = null;
+const remoteStreams = {};
 
 const participantNames = {};
 
@@ -60,6 +61,8 @@ const shareModal = document.querySelector('#share-modal');
 const usernameField = document.querySelector('#username');
 
 async function createRoom() {
+    if(constraints.audio || constraints.video) await startStream();
+
     roomRef = db.collection('pearmo-rooms').doc();
     connectionsRef = roomRef.collection('connections');
 
@@ -103,6 +106,8 @@ async function joinRoom() {
         popToast('warning', warning);
         return;
     }
+
+    if(constraints.audio || constraints.video) await startStream();
 
     // Retrieve the room data
     const roomData = doc.data();
@@ -178,6 +183,13 @@ async function createOffer(participant) {
     const dataChannel = peerConnection.createDataChannel('messages');
     dataChannels[participant] = dataChannel; // Map the data channel to the participant
 
+    // Add the local stream's tracks to the connection
+    if(localStream) {
+        localStream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, localStream);
+        });
+    }
+
     registerDataChannelListeners(participant, dataChannel);
 
     const connectionDocRef = connectionsRef.doc(); // Create connection doc ref
@@ -226,6 +238,13 @@ async function createAnswer(participant, connectionDoc) {
 
         registerDataChannelListeners(participant, dataChannel);
     });
+
+    // Add the local stream's tracks to the connection
+    if(localStream) {
+        localStream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, localStream);
+        });
+    }
 
     // Start collecting ICE candidates
     await collectIceCandidates(connectionDoc.ref, participant, peerConnection);
@@ -315,6 +334,18 @@ async function collectIceCandidates(connectionDocRef, participant, peerConnectio
 }
 
 function registerPeerConnectionListeners(participant, peerConnection) {
+    peerConnection.addEventListener('track', event => {
+        console.log(participant, 'Got remote track', event.streams[0]);
+
+        if(!remoteStreams[participant]) addRemoteStream(participant);
+        const remoteStream = remoteStreams[participant];
+
+        event.streams[0].getTracks().forEach(track => {
+            console.log(participant, 'Adding track to remote stream', track);
+            remoteStream.addTrack(track);
+        });
+    });
+
     peerConnection.addEventListener('negotiationneeded', async event => {
         console.log(participant, 'Negotiation needed');
 
@@ -441,7 +472,98 @@ function sendMsg() {
     msgInput.value = ''; // Clear the message input field
 }
 
+async function startStream() {
+    try {
+        // Determine whether we're using the camera or screen share
+        const streamOptsForm = document.querySelector('#stream-options');
+        const streamOptsData = new FormData(streamOptsForm);
+
+        const videoType = streamOptsData.get('video-type');
+
+        switch(videoType) {
+            case 'camera':
+                localStream = await navigator.mediaDevices.getUserMedia(constraints);
+                break;
+
+            case 'screen-share':
+                localStream = await navigator.mediaDevices.getDisplayMedia(constraints);
+                break;
+
+            default:
+                console.error('Invalid video type.', videoType);
+                return;
+        }
+
+        // Add a video element to the stream area
+        const localVideo = videoTemplate.content.firstElementChild.cloneNode(true);
+        localVideo.id = 'local-video';
+        localVideo.muted = true;
+        localVideo.srcObject = localStream;
+
+        streamArea.appendChild(localVideo);
+    } catch (error) {
+        console.error('Error starting stream.', error);
+    }
+}
+
+function stopStream() {
+    localStream.getTracks().forEach(track => track.stop());
+
+    let localVideo = document.querySelector('#local-video');
+
+    // Set srcObject to null to sever the link with the MediaStream so it can be released
+    localVideo.srcObject = null;
+
+    localStream = null;
+
+    // Remove the video element from the stream area and remove the element reference
+    localVideo.remove();
+    localVideo = null;
+}
+
+function addRemoteStream(participant) {
+    // Create a new stream
+    const remoteStream = new MediaStream();
+    remoteStreams[participant] = remoteStream;
+
+    // Add video element to stream area
+    const remoteVideo = videoTemplate.content.firstElementChild.cloneNode(true);
+    remoteVideo.id = `remote-video-${participant}`;
+    remoteVideo.srcObject = remoteStream;
+
+    streamArea.appendChild(remoteVideo);
+}
+
+function removeRemoteStream(participant) {
+    let remoteStream = remoteStreams[participant];
+
+    if(!remoteStream) {
+        console.warning(participant, 'No remote stream found. Unable to remove.');
+        return;
+    }
+
+    remoteStream.getTracks().forEach(track => track.stop());
+
+    let remoteVideo = document.querySelector(`#remote-video-${participant}`);
+
+    // Set srcObject to null to sever the link with the MediaStream so it can be released
+    remoteVideo.srcObject = null;
+
+    remoteStream = null;
+
+    // Remove the video element from the stream area and remove the element reference
+    remoteVideo.remove();
+    remoteVideo = null;
+}
+
 function hangUp() {
+    // Stop streams
+    if(localStream) stopStream();
+
+    for(const participant in remoteStreams) {
+        removeRemoteStream(participant);
+    }
+
     // Unsubscribe from db listeners
     if(unsub) {
         unsub();
@@ -530,55 +652,6 @@ async function cleanUpDb() {
             console.log('Deleted room.', res);
         }
     }
-}
-
-async function startStream() {
-    try {
-        // Determine whether we're using the camera or screen share
-        const streamOptsForm = document.querySelector('#stream-options');
-        const streamOptsData = new FormData(streamOptsForm);
-
-        const videoType = streamOptsData.get('video-type');
-
-        switch(videoType) {
-            case 'camera':
-                localStream = await navigator.mediaDevices.getUserMedia(constraints);
-                break;
-
-            case 'screen-share':
-                localStream = await navigator.mediaDevices.getDisplayMedia(constraints);
-                break;
-
-            default:
-                console.error('Invalid video type.', videoType);
-                return;
-        }
-
-        // Add a video element to the stream area
-        const localVideo = videoTemplate.content.firstElementChild.cloneNode(true);
-        localVideo.id = 'local-video';
-        localVideo.muted = true;
-        localVideo.srcObject = localStream;
-
-        streamArea.appendChild(localVideo);
-    } catch (error) {
-        console.error('Error starting stream.', error);
-    }
-}
-
-function stopStream() {
-    localStream.getTracks().forEach(track => track.stop());
-
-    let localVideo = document.querySelector('#local-video');
-
-    // Set srcObject to null to sever the link with the MediaStream so it can be released
-    localVideo.srcObject = null;
-
-    localStream = null;
-
-    // Remove the video element from the stream area and remove the element reference
-    localVideo.remove();
-    localVideo = null;
 }
 
 function popToast(type, message) {
