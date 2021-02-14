@@ -579,6 +579,8 @@ function stopStream() {
 }
 
 function addRemoteStream(participant) {
+    console.log(participant, 'Creating new remote stream');
+
     // Create a new stream
     const remoteStream = new MediaStream();
     remoteStreams[participant] = remoteStream;
@@ -672,6 +674,8 @@ function hangUp() {
     joinRoomBtn.disabled = false;
     hangUpBtn.disabled = true;
     videoOptions.forEach(optionEl => optionEl.disabled = !videoEnabledCheck.checked);
+
+    adjustCommAreaUi();
 }
 
 async function cleanUpDb() {
@@ -749,10 +753,6 @@ function hideToast() {
 }
 
 function adjustCommAreaUi() {
-    //// TODO: Figure out upgrading
-    audioEnabledCheck.disabled = createRoomBtn.disabled;
-    videoEnabledCheck.disabled = createRoomBtn.disabled;
-
     // Enable/disable video options
     videoOptions.forEach(optionEl => optionEl.disabled = !videoEnabledCheck.checked || createRoomBtn.disabled);
 
