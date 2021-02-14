@@ -45,6 +45,7 @@ const videoOptions = document.querySelectorAll('.video-option');
 const streamArea = document.querySelector('#stream-area');
 const videoTemplate = document.querySelector('#template-video');
 
+const chatArea = document.querySelector('#chat-area');
 const msgContainer = document.querySelector('#messages-container');
 const msgInput = document.querySelector('#message-input');
 const sendBtn = document.querySelector('#send');
@@ -503,6 +504,8 @@ async function startStream() {
         localVideo.srcObject = localStream;
 
         streamArea.appendChild(localVideo);
+
+        adjustCommAreaUi();
     } catch (error) {
         console.error('Error starting stream.', error);
     }
@@ -521,6 +524,8 @@ function stopStream() {
     // Remove the video element from the stream area and remove the element reference
     localVideo.remove();
     localVideo = null;
+
+    adjustCommAreaUi();
 }
 
 function addRemoteStream(participant) {
@@ -534,6 +539,8 @@ function addRemoteStream(participant) {
     remoteVideo.srcObject = remoteStream;
 
     streamArea.appendChild(remoteVideo);
+
+    adjustCommAreaUi();
 }
 
 function removeRemoteStream(participant) {
@@ -557,6 +564,8 @@ function removeRemoteStream(participant) {
     // Remove the video element from the stream area and remove the element reference
     remoteVideo.remove();
     remoteVideo = null;
+
+    adjustCommAreaUi();
 }
 
 function hangUp() {
@@ -689,6 +698,22 @@ function hideToast() {
     toast.classList.remove(...classes);
 }
 
+function adjustCommAreaUi() {
+    // Enable/disable video options
+    videoOptions.forEach(optionEl => optionEl.disabled = !videoEnabledCheck.checked);
+
+    // Show/Hide the stream area
+    if(audioEnabledCheck.checked || videoEnabledCheck.checked || streamArea.hasChildNodes()) {
+        streamArea.style.display = 'flex';
+        chatArea.classList.remove('col-12');
+        chatArea.classList.add('col-3');
+    }else{
+        streamArea.style.display = 'none';
+        chatArea.classList.remove('col-3');
+        chatArea.classList.add('col-12');
+    }
+}
+
 function initUsernameModal() {
     // Show Create Username modal when avatar is clicked
     userAvatar.addEventListener('click', event => {
@@ -790,33 +815,15 @@ function initShareModal() {
 }
 
 function initStreamOptions() {
-    const streamArea = document.querySelector('#stream-area');
-    const chatArea = document.querySelector('#chat-area');
-
-    // Show/Hide the stream area if either stream option is enabled
-    function adjustUiToStreamOpts() {
-        if(audioEnabledCheck.checked || videoEnabledCheck.checked) {
-            streamArea.style.display = 'flex';
-            chatArea.classList.remove('col-12');
-            chatArea.classList.add('col-3');
-        }else{
-            streamArea.style.display = 'none';
-            chatArea.classList.remove('col-3');
-            chatArea.classList.add('col-12');
-        }
-    }
-
     audioEnabledCheck.addEventListener('change', function(event) {
-        adjustUiToStreamOpts();
+        adjustCommAreaUi();
 
         constraints.audio = this.checked; // Update the media constraints
     });
 
-    //// TODO: Handle video options when enabling video after already connected
     // Enable/Disable video options elements according to the video enabled element
     videoEnabledCheck.addEventListener('change', function(event) {
-        adjustUiToStreamOpts();
-        videoOptions.forEach(optionEl => optionEl.disabled = !this.checked);
+        adjustCommAreaUi();
 
         constraints.video = this.checked; // Update the media constraints
     });
