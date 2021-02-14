@@ -393,6 +393,8 @@ function registerDataChannelListeners(participant, dataChannel) {
     dataChannel.addEventListener('close', event => {
         console.log(participant, 'Data channel close');
 
+        removeRemoteStream(participant);
+
         // Show disconnect message
         const disconnectMsg = `Disconnected from ${participantNames[participant]}`;
 
@@ -538,7 +540,7 @@ function removeRemoteStream(participant) {
     let remoteStream = remoteStreams[participant];
 
     if(!remoteStream) {
-        console.warning(participant, 'No remote stream found. Unable to remove.');
+        console.warn(participant, 'No remote stream found. Unable to remove.');
         return;
     }
 
@@ -550,6 +552,7 @@ function removeRemoteStream(participant) {
     remoteVideo.srcObject = null;
 
     remoteStream = null;
+    delete remoteStreams[participant];
 
     // Remove the video element from the stream area and remove the element reference
     remoteVideo.remove();
