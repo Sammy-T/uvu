@@ -38,6 +38,7 @@ const createRoomBtn = document.querySelector('#create-room');
 const joinRoomBtn = document.querySelector('#join-room');
 const hangUpBtn = document.querySelector('#hang-up');
 
+const streamOptsForm = document.querySelector('#stream-options');
 const audioEnabledCheck = document.querySelector('#audio-enabled');
 const videoEnabledCheck = document.querySelector('#video-enabled');
 const videoOptions = document.querySelectorAll('.video-option');
@@ -85,6 +86,8 @@ async function createRoom() {
     joinRoomBtn.disabled = true;
     hangUpBtn.disabled = false;
     videoOptions.forEach(optionEl => optionEl.disabled = true);
+
+    adjustCommAreaUi();
 }
 
 async function joinRoom() {
@@ -138,6 +141,8 @@ async function joinRoom() {
     joinRoomBtn.disabled = true;
     hangUpBtn.disabled = false;
     videoOptions.forEach(optionEl => optionEl.disabled = true);
+
+    adjustCommAreaUi();
 }
 
 function addNegotiator() {
@@ -478,9 +483,7 @@ function sendMsg() {
 async function startStream() {
     try {
         // Determine whether we're using the camera or screen share
-        const streamOptsForm = document.querySelector('#stream-options');
         const streamOptsData = new FormData(streamOptsForm);
-
         const videoType = streamOptsData.get('video-type');
 
         switch(videoType) {
@@ -493,8 +496,7 @@ async function startStream() {
                 break;
 
             default:
-                console.error('Invalid video type.', videoType);
-                return;
+                localStream = await navigator.mediaDevices.getUserMedia(constraints);
         }
 
         // Add a video element to the stream area
@@ -508,6 +510,54 @@ async function startStream() {
         adjustCommAreaUi();
     } catch (error) {
         console.error('Error starting stream.', error);
+    }
+}
+
+async function upgradeStream(mediaType) {
+    try {
+        console.log('Upgrading stream');
+
+        const upgradeConstraints = {...constraints}; // Copy the constraints object
+        
+        // Delete the extra parameter
+        const delParam = (mediaType === 'audio') ? 'video' : 'audio';
+        delete upgradeConstraints[delParam];
+
+        // Determine whether we're using the camera or screen share
+        const streamOptsData = new FormData(streamOptsForm);
+        const videoType = streamOptsData.get('video-type');
+
+        let stream;
+        switch(videoType) {
+            case 'camera':
+                stream = await navigator.mediaDevices.getUserMedia(upgradeConstraints);
+                break;
+
+            case 'screen-share':
+                stream = await navigator.mediaDevices.getDisplayMedia(upgradeConstraints);
+                break;
+
+            default:
+                stream = await navigator.mediaDevices.getUserMedia(upgradeConstraints);
+        }
+
+        const addedTracks = (mediaType === 'audio') ? stream.getAudioTracks() : stream.getVideoTracks();
+
+        const localVideo = document.querySelector('#local-video');
+        localVideo.srcObject = null;
+
+        // Add the tracks to the local stream and peer connection(s)
+        addedTracks.forEach(track => {
+            localStream.addTrack(track);
+
+            for(const participant in peerConnections) {
+                peerConnections[participant].addTrack(track, localStream);
+            }
+        });
+
+        localVideo.srcObject = localStream;
+    } catch (error) {
+        console.error('Error upgrading stream', error);
     }
 }
 
@@ -699,8 +749,12 @@ function hideToast() {
 }
 
 function adjustCommAreaUi() {
+    //// TODO: Figure out upgrading
+    audioEnabledCheck.disabled = createRoomBtn.disabled;
+    videoEnabledCheck.disabled = createRoomBtn.disabled;
+
     // Enable/disable video options
-    videoOptions.forEach(optionEl => optionEl.disabled = !videoEnabledCheck.checked);
+    videoOptions.forEach(optionEl => optionEl.disabled = !videoEnabledCheck.checked || createRoomBtn.disabled);
 
     // Show/Hide the stream area
     if(audioEnabledCheck.checked || videoEnabledCheck.checked || streamArea.hasChildNodes()) {
@@ -819,6 +873,17 @@ function initStreamOptions() {
         adjustCommAreaUi();
 
         constraints.audio = this.checked; // Update the media constraints
+
+        if(createRoomBtn.disabled) {
+            if(constraints.audio && !localStream) {
+                startStream()
+            }else if(constraints.audio && localStream && localStream.getAudioTracks().length === 0) {
+                upgradeStream('audio');
+            }else if(localStream && localStream.getAudioTracks().length > 0) {
+                // Toggle audio tracks
+                localStream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
+            }
+        }
     });
 
     // Enable/Disable video options elements according to the video enabled element
@@ -826,6 +891,17 @@ function initStreamOptions() {
         adjustCommAreaUi();
 
         constraints.video = this.checked; // Update the media constraints
+
+        if(createRoomBtn.disabled) {
+            if(constraints.video && !localStream) {
+                startStream()
+            }else if(constraints.video && localStream && localStream.getVideoTracks().length === 0) {
+                upgradeStream('video');
+            }else if(localStream && localStream.getVideoTracks().length > 0) {
+                // Toggle video tracks
+                localStream.getVideoTracks().forEach(track => track.enabled = !track.enabled);
+            }
+        }
     });
 }
 
