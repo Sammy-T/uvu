@@ -29,6 +29,8 @@ const remoteStreams = {};
 
 const participantNames = {};
 
+let editableOnCall = null;
+
 let modalAction = null;
 
 const roomIdInput = document.querySelector('#room-id-input');
@@ -87,6 +89,7 @@ async function createRoom() {
     hangUpBtn.disabled = false;
     videoOptions.forEach(optionEl => optionEl.disabled = true);
 
+    editableOnCall = {...constraints};
     adjustCommAreaUi();
 }
 
@@ -142,6 +145,7 @@ async function joinRoom() {
     hangUpBtn.disabled = false;
     videoOptions.forEach(optionEl => optionEl.disabled = true);
 
+    editableOnCall = {...constraints};
     adjustCommAreaUi();
 }
 
@@ -229,31 +233,37 @@ async function createOffer(participant) {
 }
 
 async function createAnswer(participant, connectionDoc) {
-    connectionDocRefs[participant] = connectionDoc.ref;
+    let peerConnection;
 
-    // Create a connection
-    const peerConnection = new RTCPeerConnection(configuration);
-    peerConnection[participant] = peerConnection; // Map the connection to the participant
+    if(!peerConnections[participant]) {
+        connectionDocRefs[participant] = connectionDoc.ref;
 
-    registerPeerConnectionListeners(participant, peerConnection);
+        // Create a connection
+        peerConnection = new RTCPeerConnection(configuration);
+        peerConnection[participant] = peerConnection; // Map the connection to the participant
 
-    // Listen for data channels
-    peerConnection.addEventListener('datachannel', event => {
-        const dataChannel = event.channel;
-        dataChannels[participant] = dataChannel; // Map the data channel to the participant
+        registerPeerConnectionListeners(participant, peerConnection);
 
-        registerDataChannelListeners(participant, dataChannel);
-    });
+        // Listen for data channels
+        peerConnection.addEventListener('datachannel', event => {
+            const dataChannel = event.channel;
+            dataChannels[participant] = dataChannel; // Map the data channel to the participant
 
-    // Add the local stream's tracks to the connection
-    if(localStream) {
-        localStream.getTracks().forEach(track => {
-            peerConnection.addTrack(track, localStream);
+            registerDataChannelListeners(participant, dataChannel);
         });
-    }
 
-    // Start collecting ICE candidates
-    await collectIceCandidates(connectionDoc.ref, participant, peerConnection);
+        // Add the local stream's tracks to the connection
+        if(localStream) {
+            localStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, localStream);
+            });
+        }
+
+        // Start collecting ICE candidates
+        await collectIceCandidates(connectionDoc.ref, participant, peerConnection);
+    }else{
+        peerConnection = peerConnections[participant];
+    }
 
     const connectionData = connectionDoc.data();
 
@@ -330,7 +340,7 @@ async function collectIceCandidates(connectionDocRef, participant, peerConnectio
                 try {
                     await peerConnection.addIceCandidate(new RTCIceCandidate(data));
                 } catch (error) {
-                    console.error(participant, 'Error adding remote ICE candidate', error);
+                    console.error(participant, 'Error adding remote ICE candidate.', error.name, error);
                 }
             }
         });
@@ -453,6 +463,11 @@ function registerDataChannelListeners(participant, dataChannel) {
 
         msgContainer.appendChild(msgEl);
         msgEl.scrollIntoView();
+    });
+
+    dataChannel.addEventListener('error', event => {
+        const err = event.error;
+        console.error(participant, 'Data channel error', err, err.message, err.errorDetail, err.sctpCauseCode);
     });
 }
 
@@ -753,6 +768,10 @@ function hideToast() {
 }
 
 function adjustCommAreaUi() {
+    // Allow media options enabled before beginning the call continue to be toggled
+    audioEnabledCheck.disabled = createRoomBtn.disabled && !editableOnCall.audio;
+    videoEnabledCheck.disabled = createRoomBtn.disabled && !editableOnCall.video;
+
     // Enable/disable video options
     videoOptions.forEach(optionEl => optionEl.disabled = !videoEnabledCheck.checked || createRoomBtn.disabled);
 
