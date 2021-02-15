@@ -26,6 +26,9 @@ main {
 
 #stream-area video {
     flex-grow: 1;
+}
+
+.stream-video {
     max-width: 50%;
 }
 

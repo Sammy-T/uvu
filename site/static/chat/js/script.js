@@ -365,7 +365,7 @@ function registerPeerConnectionListeners(participant, peerConnection) {
     peerConnection.addEventListener('negotiationneeded', async event => {
         console.log(participant, 'Negotiation needed');
 
-        //// TODO: Create new offers to connected participants
+        // Create new offers to connected participants
         if(peerConnection.connectionState === 'connected') renegotiateOffer(participant, peerConnection);
     });
 
@@ -778,6 +778,15 @@ function adjustCommAreaUi() {
         streamArea.style.display = 'none';
         chatArea.classList.remove('col-3');
         chatArea.classList.add('col-12');
+    }
+
+    const streamVideos = document.querySelectorAll('#stream-area video');
+    
+    // Style the video elements to scale along with their amount
+    if(streamVideos.length > 1) {
+        streamVideos.forEach(video => video.classList.add('stream-video'));
+    }else if(streamVideos.length === 1) {
+        streamVideos[0].classList.remove('stream-video');
     }
 }
 
