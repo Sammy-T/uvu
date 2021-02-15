@@ -387,6 +387,34 @@ function registerPeerConnectionListeners(participant, peerConnection) {
 }
 
 function registerDataChannelListeners(participant, dataChannel) {
+    function participantDisconnected() {
+        removeRemoteStream(participant);
+
+        // Unsubscribe from the particpant's candidates
+        const candUnsub = candidateUnsubs[participant];
+        if(candUnsub) candUnsub();
+
+        // Remove the participant's associated references and info
+        delete candidateUnsubs[participant];
+        delete connectionDocRefs[participant];
+        delete offerTimes[participant];
+        delete answerTimes[participant];
+
+        delete dataChannels[participant];
+        delete peerConnections[participant];
+
+        // Show disconnect message
+        const disconnectMsg = `Disconnected from ${participantNames[participant]}`;
+
+        const msgEl = msgInfoTemplate.content.firstElementChild.cloneNode(true);
+        msgEl.querySelector('.msg-content').innerText = disconnectMsg;
+
+        msgContainer.appendChild(msgEl);
+        msgEl.scrollIntoView();
+
+        delete participantNames[participant]; // Remove the participant's username
+    }
+
     dataChannel.addEventListener('open', event => {
         console.log(participant, 'Data channel open');
 
@@ -409,18 +437,7 @@ function registerDataChannelListeners(participant, dataChannel) {
     dataChannel.addEventListener('close', event => {
         console.log(participant, 'Data channel close');
 
-        removeRemoteStream(participant);
-
-        // Show disconnect message
-        const disconnectMsg = `Disconnected from ${participantNames[participant]}`;
-
-        const msgEl = msgInfoTemplate.content.firstElementChild.cloneNode(true);
-        msgEl.querySelector('.msg-content').innerText = disconnectMsg;
-
-        msgContainer.appendChild(msgEl);
-        msgEl.scrollIntoView();
-
-        delete participantNames[participant]; // Remove the participant's username
+        participantDisconnected();
 
         // Check for any remaining available data channels
         for(const participant in dataChannels) {
