@@ -240,7 +240,7 @@ async function createAnswer(participant, connectionDoc) {
 
         // Create a connection
         peerConnection = new RTCPeerConnection(configuration);
-        peerConnection[participant] = peerConnection; // Map the connection to the participant
+        peerConnections[participant] = peerConnection; // Map the connection to the participant
 
         registerPeerConnectionListeners(participant, peerConnection);
 
@@ -351,7 +351,7 @@ async function collectIceCandidates(connectionDocRef, participant, peerConnectio
 
 function registerPeerConnectionListeners(participant, peerConnection) {
     peerConnection.addEventListener('track', event => {
-        console.log(participant, 'Got remote track', event.streams[0]);
+        console.log(participant, 'Got remote track', event.streams[0], event.streams);
 
         if(!remoteStreams[participant]) addRemoteStream(participant);
         const remoteStream = remoteStreams[participant];
@@ -539,8 +539,7 @@ async function upgradeStream(mediaType) {
         delete upgradeConstraints[delParam];
 
         // Determine whether we're using the camera or screen share
-        const streamOptsData = new FormData(streamOptsForm);
-        const videoType = streamOptsData.get('video-type');
+        const videoType = [...videoOptions].find(option => option.checked).value;
 
         let stream;
         switch(videoType) {
@@ -768,10 +767,6 @@ function hideToast() {
 }
 
 function adjustCommAreaUi() {
-    // Allow media options enabled before beginning the call continue to be toggled
-    audioEnabledCheck.disabled = createRoomBtn.disabled && !editableOnCall.audio;
-    videoEnabledCheck.disabled = createRoomBtn.disabled && !editableOnCall.video;
-
     // Enable/disable video options
     videoOptions.forEach(optionEl => optionEl.disabled = !videoEnabledCheck.checked || createRoomBtn.disabled);
 
