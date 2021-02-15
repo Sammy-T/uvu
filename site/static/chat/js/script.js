@@ -498,8 +498,7 @@ function sendMsg() {
 async function startStream() {
     try {
         // Determine whether we're using the camera or screen share
-        const streamOptsData = new FormData(streamOptsForm);
-        const videoType = streamOptsData.get('video-type');
+        const videoType = [...videoOptions].find(option => option.checked).value;
 
         switch(videoType) {
             case 'camera':
@@ -883,6 +882,17 @@ function initShareModal() {
 }
 
 function initStreamOptions() {
+    async function createNewStream() {
+        await startStream();
+
+        // Add the new stream's tracks to the connection
+        localStream.getTracks().forEach(track => {
+            for(const participant in peerConnections) {
+                peerConnections[participant].addTrack(track, localStream);
+            }
+        });
+    }
+
     audioEnabledCheck.addEventListener('change', function(event) {
         adjustCommAreaUi();
 
@@ -890,7 +900,7 @@ function initStreamOptions() {
 
         if(createRoomBtn.disabled) {
             if(constraints.audio && !localStream) {
-                startStream()
+                createNewStream();
             }else if(constraints.audio && localStream && localStream.getAudioTracks().length === 0) {
                 upgradeStream('audio');
             }else if(localStream && localStream.getAudioTracks().length > 0) {
@@ -908,7 +918,7 @@ function initStreamOptions() {
 
         if(createRoomBtn.disabled) {
             if(constraints.video && !localStream) {
-                startStream()
+                createNewStream();
             }else if(constraints.video && localStream && localStream.getVideoTracks().length === 0) {
                 upgradeStream('video');
             }else if(localStream && localStream.getVideoTracks().length > 0) {
