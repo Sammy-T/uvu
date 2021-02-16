@@ -43,7 +43,6 @@ main {
 #messages-container {
     width: 100%;
     min-height: 12rem;
-    max-height: 40vh;
     flex-grow: 1;
     overflow: auto;
     padding-right: 0.5em;
