@@ -151,8 +151,10 @@ async function joinRoom() {
 
 function addNegotiator() {
     unsub = connectionsRef.onSnapshot(snapshot => {
-        snapshot.forEach(async doc => {
-            const data = doc.data();
+        snapshot.docChanges().forEach(async change => {
+            if(change.type === 'removed') return; // Ignore documents being removed
+
+            const data = change.doc.data();
 
             if(data.from && data.from === localUid && data.answer && (!answerTimes[data.to] || answerTimes[data.to].getTime() != data.answerTime.toDate().getTime())) {
                 console.log('Received new answer.', data.answer, data);
@@ -173,7 +175,7 @@ function addNegotiator() {
                 // Update the participant's local offer time
                 offerTimes[participant] = data.offerTime.toDate();
 
-                createAnswer(participant, doc);
+                createAnswer(participant, change.doc);
             }
         });
     }, error => {
