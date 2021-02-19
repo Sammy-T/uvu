@@ -362,6 +362,10 @@ function registerPeerConnectionListeners(participant, peerConnection) {
             console.log(participant, 'Adding track to remote stream', track);
             remoteStream.addTrack(track);
         });
+
+        // Set/Refresh the video element's src
+        const remoteVideo = document.querySelector(`#remote-video-${participant}`);
+        remoteVideo.srcObject = remoteStream;
     });
 
     peerConnection.addEventListener('negotiationneeded', async event => {
@@ -616,7 +620,6 @@ function addRemoteStream(participant) {
     // Add video element to stream area
     const remoteVideo = videoTemplate.content.firstElementChild.cloneNode(true);
     remoteVideo.id = `remote-video-${participant}`;
-    remoteVideo.srcObject = remoteStream;
 
     streamArea.appendChild(remoteVideo);
 
