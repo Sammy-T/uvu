@@ -425,11 +425,7 @@ function registerDataChannelListeners(participant, dataChannel) {
             content: `Connected to ${username}`
         };
 
-        // Send message to all data channels
-        for(participant in dataChannels) {
-            const dataChannel = dataChannels[participant];
-            dataChannel.send(JSON.stringify(message));
-        }
+        dataChannel.send(JSON.stringify(message));
 
         if(sendBtn.disabled) sendBtn.disabled = false; // Enable the send button if it's disabled
     });
