@@ -538,7 +538,11 @@ async function startStream() {
         localVideo.muted = true;
         localVideo.srcObject = localStream;
 
-        streamArea.appendChild(localVideo);
+        if(streamArea.hasChildNodes()) {
+            streamArea.insertBefore(localVideo, streamArea.firstChild);
+        }else{
+            streamArea.appendChild(localVideo);
+        }
 
         adjustCommAreaUi();
     } catch (error) {
