@@ -27,6 +27,8 @@ const dataChannels = {};
 let localStream = null;
 const remoteStreams = {};
 
+const streamQueue = [];
+
 const participantNames = {};
 
 let editableOnCall = null;
@@ -254,12 +256,10 @@ async function createAnswer(participant, connectionDoc) {
             registerDataChannelListeners(participant, dataChannel);
         });
 
-        // Add the local stream's tracks to the connection
-        if(localStream) {
-            localStream.getTracks().forEach(track => {
-                peerConnection.addTrack(track, localStream);
-            });
-        }
+        // Queue adding tracks for later so that renegotiation is triggered
+        // (This helps address the issue of the offerer not receiving the answerer's tracks
+        // when the offerer hasn't created any media streams on the connection)
+        if(localStream) streamQueue.push(participant);
 
         // Start collecting ICE candidates
         await collectIceCandidates(connectionDoc.ref, participant, peerConnection);
@@ -381,6 +381,19 @@ function registerPeerConnectionListeners(participant, peerConnection) {
 
     peerConnection.addEventListener('connectionstatechange', event => {
         console.log(participant, `Connection state change: ${peerConnection.connectionState}`);
+
+        // Add the local stream's tracks to the connection if they're queued
+        if(peerConnection.connectionState === 'connected' && streamQueue.includes(participant)) {
+            console.log(participant, 'Adding queued tracks to connection');
+            
+            localStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, localStream);
+            });
+
+            // Remove the participant from the stream queue
+            const pos = streamQueue.indexOf(participant);
+            streamQueue.splice(pos, 1);
+        }
     });
 
     peerConnection.addEventListener('signalingstatechange', event => {
@@ -486,7 +499,7 @@ function registerDataChannelListeners(participant, dataChannel) {
 
     dataChannel.addEventListener('error', event => {
         const err = event.error;
-        console.error(participant, 'Data channel error', err, err.message, err.errorDetail, err.sctpCauseCode);
+        console.warn(participant, 'Data channel error', err, err.message, err.errorDetail, err.sctpCauseCode);
     });
 }
 
