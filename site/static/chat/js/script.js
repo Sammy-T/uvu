@@ -925,11 +925,54 @@ function initShareModal() {
 }
 
 function initInputDeviceModal() {
+    const videoSelect = document.querySelector('#video-device');
+    const audioSelect = document.querySelector('#audio-device');
+
+    async function showInputDeviceModal() {
+        inputDeviceModal.classList.add('active');
+
+        // Query the available devices
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        console.log('Available devices', devices);
+
+        // Filter 'videoinput' and 'audioinput' devices into respective arrays
+        const videoInputDevices = devices.filter(device => device.kind === 'videoinput');
+        const audioInputDevices = devices.filter(device => device.kind === 'audioinput');
+
+        // Clear any previous options
+        videoSelect.innerHTML = '';
+        audioSelect.innerHTML = '';
+
+        // Add the default option
+        const defaultOption = document.createElement('option');
+        defaultOption.text = 'Auto';
+        defaultOption.value = 'auto';
+
+        videoSelect.appendChild(defaultOption.cloneNode(true));
+        audioSelect.appendChild(defaultOption.cloneNode(true));
+
+        function addDeviceOption(selectEl, device) {
+            if(device.label === '') return;
+
+            const deviceOption = document.createElement('option');
+            deviceOption.text = device.label;
+            deviceOption.value = device.deviceId;
+
+            selectEl.appendChild(deviceOption);
+        }
+
+        // Add the device options to their corresponding select elements
+        videoInputDevices.forEach(device => addDeviceOption(videoSelect, device));
+        audioInputDevices.forEach(device => addDeviceOption(audioSelect, device));
+
+        //// TODO: Set selected device
+    }
+
     // Show the Input Device modal when the more options button is clicked 
     document.querySelector('#more-options').addEventListener('click', event => {
         event.preventDefault(); // Prevent the button from automatically trying to submit the Stream Options form
 
-        inputDeviceModal.classList.add('active');
+        showInputDeviceModal();
     });
 }
 
