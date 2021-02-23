@@ -33,6 +33,9 @@ const streamQueue = [];
 const participantNames = {};
 
 let modalAction = null;
+let pendingConstraintChanges = false;
+
+const pendingConstraintsEvent = new Event('pending-constraints');
 
 const roomIdInput = document.querySelector('#room-id-input');
 const userAvatar = document.querySelector('#user-avatar');
@@ -987,7 +990,7 @@ function initInputDeviceModal() {
 
         if(videoEnabledCheck.checked) {
             constraints.video = desiredConstraints.video;
-            //// TODO: Check for/update stream?
+            pendingConstraintChanges = true; // Mark the device constraints as changed
         }
     });
     
@@ -996,8 +999,38 @@ function initInputDeviceModal() {
 
         if(audioEnabledCheck.checked) {
             constraints.audio = desiredConstraints.audio;
-            //// TODO: Check for/update stream?
+            pendingConstraintChanges = true; // Mark the device constraints as changed
         }
+    });
+
+    inputDeviceModal.addEventListener('pending-constraints', async event => {
+        pendingConstraintChanges = false;
+
+        if(!localStream) return;
+
+        console.log('Updating stream w/ changed constraints', constraints);
+
+        const message = {
+            type: 'system',
+            category: 'refresh-stream'
+        };
+
+        // Signal connected participants to remove the current stream
+        for(const participant in dataChannels) {
+            const dataChannel = dataChannels[participant];
+            dataChannel.send(JSON.stringify(message));
+        }
+
+        stopStream();
+
+        await startStream();
+
+        // Add the new stream's tracks to the connection
+        localStream.getTracks().forEach(track => {
+            for(const participant in peerConnections) {
+                peerConnections[participant].addTrack(track, localStream);
+            }
+        });
     });
 }
 
@@ -1077,6 +1110,9 @@ function init() {
     document.querySelectorAll('.close-modal').forEach(closeElement => {
         closeElement.addEventListener('click', event => {
             event.preventDefault();
+
+            // Dispatch a Pending Constraint event if the Input Device modal closed with options changed
+            if(pendingConstraintChanges) inputDeviceModal.dispatchEvent(pendingConstraintsEvent);
 
             modalAction = null;
 
