@@ -819,9 +819,13 @@ function adjustCommAreaUi() {
     
     // Style the video elements to scale along with their amount
     if(streamVideos.length > 1) {
-        streamVideos.forEach(video => video.classList.add('stream-video'));
+        streamVideos.forEach(video => {
+            video.classList.remove('stream-video-single');
+            video.classList.add('stream-video');
+        });
     }else if(streamVideos.length === 1) {
         streamVideos[0].classList.remove('stream-video');
+        streamVideos[0].classList.add('stream-video-single');
     }
 }
 

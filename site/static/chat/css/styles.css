@@ -32,6 +32,10 @@ main {
     max-width: 50%;
 }
 
+.stream-video-single {
+    max-width: inherit;
+}
+
 #chat-area {
     padding-top: 0.4rem;
     padding-bottom: 0.4rem;
