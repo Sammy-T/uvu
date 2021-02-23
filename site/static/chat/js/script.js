@@ -61,6 +61,7 @@ const toast = document.querySelector('.toast');
 
 const usernameModal = document.querySelector('#username-modal');
 const shareModal = document.querySelector('#share-modal');
+const inputDeviceModal = document.querySelector('#input-device-modal')
 
 const usernameField = document.querySelector('#username');
 
@@ -923,6 +924,15 @@ function initShareModal() {
     });
 }
 
+function initInputDeviceModal() {
+    // Show the Input Device modal when the more options button is clicked 
+    document.querySelector('#more-options').addEventListener('click', event => {
+        event.preventDefault(); // Prevent the button from automatically trying to submit the Stream Options form
+
+        inputDeviceModal.classList.add('active');
+    });
+}
+
 function initStreamOptions() {
     async function createNewStream() {
         await startStream();
@@ -1008,6 +1018,7 @@ function init() {
 
     initUsernameModal();
     initShareModal();
+    initInputDeviceModal();
 
     initStreamOptions();
 
