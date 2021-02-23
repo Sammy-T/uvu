@@ -5,6 +5,7 @@ const configuration = {
 };
 
 let constraints = {video: false, audio: false};
+let desiredConstraints = {video: true, audio: true};
 
 const db = firebase.firestore();
 
@@ -958,14 +959,19 @@ function initInputDeviceModal() {
             deviceOption.text = device.label;
             deviceOption.value = device.deviceId;
 
+            const desiredAudio = desiredConstraints.audio.deviceId;
+            const desiredVideo = desiredConstraints.video.deviceId;
+
+            if(desiredAudio === device.deviceId || desiredVideo === device.deviceId) {
+                deviceOption.selected = true;
+            }
+
             selectEl.appendChild(deviceOption);
         }
 
         // Add the device options to their corresponding select elements
         videoInputDevices.forEach(device => addDeviceOption(videoSelect, device));
         audioInputDevices.forEach(device => addDeviceOption(audioSelect, device));
-
-        //// TODO: Set selected device
     }
 
     // Show the Input Device modal when the more options button is clicked 
@@ -973,6 +979,25 @@ function initInputDeviceModal() {
         event.preventDefault(); // Prevent the button from automatically trying to submit the Stream Options form
 
         showInputDeviceModal();
+    });
+
+    // Set desired constraints based on selected device options
+    videoSelect.addEventListener('change', function(event) {
+        desiredConstraints.video = (this.value === 'auto') ? true : {deviceId: this.value};
+
+        if(videoEnabledCheck.checked) {
+            constraints.video = desiredConstraints.video;
+            //// TODO: Check for/update stream?
+        }
+    });
+    
+    audioSelect.addEventListener('change', function(event) {
+        desiredConstraints.audio = (this.value === 'auto') ? true : {deviceId: this.value};
+
+        if(audioEnabledCheck.checked) {
+            constraints.audio = desiredConstraints.audio;
+            //// TODO: Check for/update stream?
+        }
     });
 }
 
@@ -991,7 +1016,7 @@ function initStreamOptions() {
     audioEnabledCheck.addEventListener('change', function(event) {
         adjustCommAreaUi();
 
-        constraints.audio = this.checked; // Update the media constraints
+        constraints.audio = (this.checked) ? desiredConstraints.audio : false; // Update the media constraints
 
         if(createRoomBtn.disabled) {
             if(constraints.audio && !localStream) {
@@ -1009,7 +1034,7 @@ function initStreamOptions() {
     videoEnabledCheck.addEventListener('change', function(event) {
         adjustCommAreaUi();
 
-        constraints.video = this.checked; // Update the media constraints
+        constraints.video = (this.checked) ? desiredConstraints.video : false; // Update the media constraints
 
         if(createRoomBtn.disabled) {
             if(constraints.video && !localStream) {
