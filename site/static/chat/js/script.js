@@ -31,8 +31,6 @@ const streamQueue = [];
 
 const participantNames = {};
 
-let editableOnCall = null;
-
 let modalAction = null;
 
 const roomIdInput = document.querySelector('#room-id-input');
@@ -89,9 +87,7 @@ async function createRoom() {
     createRoomBtn.disabled = true;
     joinRoomBtn.disabled = true;
     hangUpBtn.disabled = false;
-    videoOptions.forEach(optionEl => optionEl.disabled = true);
 
-    editableOnCall = {...constraints};
     adjustCommAreaUi();
 }
 
@@ -145,9 +141,7 @@ async function joinRoom() {
     createRoomBtn.disabled = true;
     joinRoomBtn.disabled = true;
     hangUpBtn.disabled = false;
-    videoOptions.forEach(optionEl => optionEl.disabled = true);
 
-    editableOnCall = {...constraints};
     adjustCommAreaUi();
 }
 
@@ -482,6 +476,10 @@ function registerDataChannelListeners(participant, dataChannel) {
                 template = msgInfoTemplate;
                 break;
 
+            case 'system':
+                if(message.category === 'refresh-stream') removeRemoteStream(participant);
+                return;
+
             default:
                 console.error('Invalid message type');
                 return;
@@ -721,7 +719,6 @@ function hangUp() {
     createRoomBtn.disabled = false;
     joinRoomBtn.disabled = false;
     hangUpBtn.disabled = true;
-    videoOptions.forEach(optionEl => optionEl.disabled = !videoEnabledCheck.checked);
 
     adjustCommAreaUi();
 }
@@ -801,9 +798,6 @@ function hideToast() {
 }
 
 function adjustCommAreaUi() {
-    // Enable/disable video options
-    videoOptions.forEach(optionEl => optionEl.disabled = !videoEnabledCheck.checked || createRoomBtn.disabled);
-
     // Show/Hide the stream area
     if(audioEnabledCheck.checked || videoEnabledCheck.checked || streamArea.hasChildNodes()) {
         streamArea.style.display = 'flex';
@@ -975,6 +969,25 @@ function initStreamOptions() {
             }
         }
     });
+
+    videoOptions.forEach(optionEl => optionEl.addEventListener('change', function(event) {
+        // If there's already an active video stream,
+        // Signal participants to remove the stream, stop the stream locally, and create a new one
+        if(localStream && localStream.getVideoTracks().length > 0) {
+            const message = {
+                type: 'system',
+                category: 'refresh-stream'
+            };
+
+            for(const participant in dataChannels) {
+                const dataChannel = dataChannels[participant];
+                dataChannel.send(JSON.stringify(message));
+            }
+
+            stopStream();
+            createNewStream();
+        }
+    }));
 }
 
 function init() {
