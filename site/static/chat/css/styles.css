@@ -92,7 +92,7 @@ main {
     display: block;
 }
 
-#share-modal .modal-container {
+.modal-container {
     border-radius: 20px;
 }
 
