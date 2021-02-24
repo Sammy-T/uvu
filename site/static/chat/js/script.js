@@ -566,51 +566,28 @@ async function startStream() {
     }
 }
 
-async function upgradeStream(mediaType) {
-    try {
-        console.log('Upgrading stream');
+async function refreshStream() {
+    const message = {
+        type: 'system',
+        category: 'refresh-stream'
+    };
 
-        const upgradeConstraints = {...constraints}; // Copy the constraints object
-        
-        // Delete the extra parameter
-        const delParam = (mediaType === 'audio') ? 'video' : 'audio';
-        delete upgradeConstraints[delParam];
-
-        // Determine whether we're using the camera or screen share
-        const videoType = [...videoOptions].find(option => option.checked).value;
-
-        let stream;
-        switch(videoType) {
-            case 'camera':
-                stream = await navigator.mediaDevices.getUserMedia(upgradeConstraints);
-                break;
-
-            case 'screen-share':
-                stream = await navigator.mediaDevices.getDisplayMedia(upgradeConstraints);
-                break;
-
-            default:
-                stream = await navigator.mediaDevices.getUserMedia(upgradeConstraints);
-        }
-
-        const addedTracks = (mediaType === 'audio') ? stream.getAudioTracks() : stream.getVideoTracks();
-
-        const localVideo = document.querySelector('#local-video');
-        localVideo.srcObject = null;
-
-        // Add the tracks to the local stream and peer connection(s)
-        addedTracks.forEach(track => {
-            localStream.addTrack(track);
-
-            for(const participant in peerConnections) {
-                peerConnections[participant].addTrack(track, localStream);
-            }
-        });
-
-        localVideo.srcObject = localStream;
-    } catch (error) {
-        console.error('Error upgrading stream', error);
+    // Signal connected participants to remove the current stream
+    for(const participant in dataChannels) {
+        const dataChannel = dataChannels[participant];
+        dataChannel.send(JSON.stringify(message));
     }
+
+    // Stop the stream locally, then create a new one
+    stopStream();
+    await startStream();
+
+    // Add the new stream's tracks to the connection(s)
+    localStream.getTracks().forEach(track => {
+        for(const participant in peerConnections) {
+            peerConnections[participant].addTrack(track, localStream);
+        }
+    });
 }
 
 function stopStream() {
@@ -1003,34 +980,13 @@ function initInputDeviceModal() {
         }
     });
 
-    inputDeviceModal.addEventListener('pending-constraints', async event => {
+    inputDeviceModal.addEventListener('pending-constraints', event => {
         pendingConstraintChanges = false;
 
         if(!localStream) return;
 
-        console.log('Updating stream w/ changed constraints', constraints);
-
-        const message = {
-            type: 'system',
-            category: 'refresh-stream'
-        };
-
-        // Signal connected participants to remove the current stream
-        for(const participant in dataChannels) {
-            const dataChannel = dataChannels[participant];
-            dataChannel.send(JSON.stringify(message));
-        }
-
-        stopStream();
-
-        await startStream();
-
-        // Add the new stream's tracks to the connection
-        localStream.getTracks().forEach(track => {
-            for(const participant in peerConnections) {
-                peerConnections[participant].addTrack(track, localStream);
-            }
-        });
+        console.log('Updating stream with new constraints', constraints);
+        refreshStream();
     });
 }
 
@@ -1055,7 +1011,7 @@ function initStreamOptions() {
             if(constraints.audio && !localStream) {
                 createNewStream();
             }else if(constraints.audio && localStream && localStream.getAudioTracks().length === 0) {
-                upgradeStream('audio');
+                refreshStream();
             }else if(localStream && localStream.getAudioTracks().length > 0) {
                 // Toggle audio tracks
                 localStream.getAudioTracks().forEach(track => track.enabled = !track.enabled);
@@ -1073,7 +1029,7 @@ function initStreamOptions() {
             if(constraints.video && !localStream) {
                 createNewStream();
             }else if(constraints.video && localStream && localStream.getVideoTracks().length === 0) {
-                upgradeStream('video');
+                refreshStream();
             }else if(localStream && localStream.getVideoTracks().length > 0) {
                 // Toggle video tracks
                 localStream.getVideoTracks().forEach(track => track.enabled = !track.enabled);
@@ -1084,20 +1040,7 @@ function initStreamOptions() {
     videoOptions.forEach(optionEl => optionEl.addEventListener('change', function(event) {
         // If there's already an active video stream,
         // Signal participants to remove the stream, stop the stream locally, and create a new one
-        if(localStream && localStream.getVideoTracks().length > 0) {
-            const message = {
-                type: 'system',
-                category: 'refresh-stream'
-            };
-
-            for(const participant in dataChannels) {
-                const dataChannel = dataChannels[participant];
-                dataChannel.send(JSON.stringify(message));
-            }
-
-            stopStream();
-            createNewStream();
-        }
+        if(localStream && localStream.getVideoTracks().length > 0) refreshStream();
     }));
 }
 
