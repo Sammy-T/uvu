@@ -16,9 +16,6 @@ firebase-debug.log*
 # it commented so all members can deploy to the same project(s) in .firebaserc.
 .firebaserc
 
-# Additionally, ignore the firebase.json config for this project
-firebase.json
-
 # Runtime data
 pids
 *.pid
