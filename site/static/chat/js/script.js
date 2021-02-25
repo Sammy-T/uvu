@@ -31,6 +31,8 @@ const remoteStreams = {};
 
 const localStreamQueue = [];
 const localDisplayStreamQueue = [];
+let remoteStreamQueue = [];
+let remoteStreamInfos = [];
 
 const participantNames = {};
 
@@ -70,6 +72,14 @@ const shareModal = document.querySelector('#share-modal');
 const inputDeviceModal = document.querySelector('#input-device-modal')
 
 const usernameField = document.querySelector('#username');
+
+class RemoteStream {
+    constructor(username, streamType, stream) {
+        this.username = username;
+        this.streamType = streamType;
+        this.stream = stream;
+    }
+}
 
 async function createRoom() {
     if(constraints.audio || constraints.video) await startStream();
@@ -362,22 +372,33 @@ async function collectIceCandidates(connectionDocRef, participant, peerConnectio
 }
 
 function registerPeerConnectionListeners(participant, peerConnection) {
+    // Add local stream tracks to the peer connection
+    function processLocalStreamQueue(streamQueue, stream) {
+        stream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, stream);
+        });
+
+        // Remove the participant from the stream queue
+        const pos = streamQueue.indexOf(participant);
+        streamQueue.splice(pos, 1);
+    }
+
     peerConnection.addEventListener('track', event => {
         console.log(participant, `Got ${event.streams.length} remote track(s)`, event.streams);
 
-        if(!remoteStreams[participant]) addRemoteStream(participant, event.streams[0]);
-        const remoteStream = remoteStreams[participant];
+        remoteStreamQueue.push(...event.streams); // Queue the remote stream(s)
 
-        // Set/Refresh the video element's src
-        const remoteVideo = document.querySelector(`#remote-video-${participant}`);
-        remoteVideo.srcObject = remoteStream;
+        processRemoteStreamQueues(participant);
     });
 
     peerConnection.addEventListener('negotiationneeded', async event => {
         console.log(participant, 'Negotiation needed');
 
         // Create new offers to connected participants
-        if(peerConnection.connectionState === 'connected') renegotiateOffer(participant, peerConnection);
+        if(peerConnection.connectionState === 'connected') {
+            if(dataChannels[participant]) sendStreamInfo(participant);
+            renegotiateOffer(participant, peerConnection);
+        }
     });
 
     peerConnection.addEventListener('icegatheringstatechange', event => {
@@ -387,17 +408,17 @@ function registerPeerConnectionListeners(participant, peerConnection) {
     peerConnection.addEventListener('connectionstatechange', event => {
         console.log(participant, `Connection state change: ${peerConnection.connectionState}`);
 
-        // Add the local stream's tracks to the connection if they're queued
-        if(peerConnection.connectionState === 'connected' && streamQueue.includes(participant)) {
-            console.log(participant, 'Adding queued tracks to connection');
-            
-            localStream.getTracks().forEach(track => {
-                peerConnection.addTrack(track, localStream);
-            });
+        if(peerConnection.connectionState === 'connected') {
+            // Add the local stream(s) tracks to the connection if they're queued
+            if(localStreamQueue.includes(participant)) {
+                console.log(participant, 'Adding queued tracks to connection');
+                processLocalStreamQueue(localStreamQueue, localStream);
+            }
 
-            // Remove the participant from the stream queue
-            const pos = streamQueue.indexOf(participant);
-            streamQueue.splice(pos, 1);
+            if(localDisplayStreamQueue.includes(participant)) {
+                console.log(participant, 'Adding queued display tracks to connection');
+                processLocalStreamQueue(localDisplayStreamQueue, localDisplayStream);
+            }
         }
     });
 
@@ -439,6 +460,28 @@ function registerDataChannelListeners(participant, dataChannel) {
         delete participantNames[participant]; // Remove the participant's username
     }
 
+    function processSystemMsg(message) {
+        switch(message.category) {
+            case 'refresh-stream':
+                removeRemoteStream(participant);
+                break;
+
+            case 'stream-info':
+                const streamInfo = {
+                    username: message.username,
+                    streamType: message.streamType,
+                    streamId: message.streamId
+                };
+
+                remoteStreamInfos.push(streamInfo);
+                processRemoteStreamQueues(participant);
+                break;
+
+            default:
+                console.error(participant, 'Invalid system message', message);
+        }
+    }
+
     dataChannel.addEventListener('open', event => {
         console.log(participant, 'Data channel open');
 
@@ -450,6 +493,8 @@ function registerDataChannelListeners(participant, dataChannel) {
         };
 
         dataChannel.send(JSON.stringify(message));
+
+        sendStreamInfo(participant);
 
         if(sendBtn.disabled) sendBtn.disabled = false; // Enable the send button if it's disabled
     });
@@ -488,11 +533,11 @@ function registerDataChannelListeners(participant, dataChannel) {
                 break;
 
             case 'system':
-                if(message.category === 'refresh-stream') removeRemoteStream(participant);
+                processSystemMsg(message);
                 return;
 
             default:
-                console.error('Invalid message type');
+                console.error(participant, 'Invalid message type', message);
                 return;
         }
 
@@ -534,6 +579,43 @@ function sendMsg() {
     msgEl.scrollIntoView();
 
     msgInput.value = ''; // Clear the message input field
+}
+
+function sendStreamInfo(participant) {
+    if(!dataChannels[participant]) {
+        console.error(participant, 'No data channel to send stream info.', dataChannels);
+        return;
+    }
+
+    const messages = [];
+
+    if(localStream) {
+        const message = {
+            type: 'system',
+            category: 'stream-info',
+            streamId: localStream.id,
+            streamType: 'media',
+            username: username
+        };
+
+        messages.push(message);
+    }
+
+    if(localDisplayStream) {
+        const message = {
+            type: 'system',
+            category: 'stream-info',
+            streamId: localDisplayStream.id,
+            streamType: 'display',
+            username: username
+        };
+
+        messages.push(message);
+    }
+
+    // Send the stream info(s) to the participant
+    const dataChannel = dataChannels[participant];
+    messages.forEach(message => dataChannel.send(JSON.stringify(message)));
 }
 
 async function startStream() {
@@ -642,42 +724,99 @@ function stopDisplayStream() {
     adjustCommAreaUi();
 }
 
+function processRemoteStreamQueues(participant){
+    // Filter out inactive streams
+    remoteStreamQueue = remoteStreamQueue.filter(stream => stream.active);
+
+    // Check if there's matching stream info
+    remoteStreamQueue.forEach(stream => {
+        const streamInfo = remoteStreamInfos.find(info => info.streamId === stream.id);
+        
+        if(streamInfo) {
+            const remoteStream = new RemoteStream(streamInfo.username, streamInfo.streamType, stream);
+            addRemoteStream(participant, remoteStream);
+        }
+    });
+
+    // Clean up the queues
+    for(const particip in remoteStreams) {
+        const rStreams = remoteStreams[particip];
+
+        rStreams.forEach(rStream => {
+            remoteStreamQueue = remoteStreamQueue.filter(stream => stream.id !== rStream.stream.id);
+            remoteStreamInfos = remoteStreamInfos.filter(info => info.streamId !== rStream.stream.id);
+        });
+    }
+}
+
 function addRemoteStream(participant, remoteStream) {
     console.log(participant, 'Creating new remote stream');
 
-    // Store the remote stream
-    remoteStreams[participant] = remoteStream;
+    if(!remoteStreams[participant]) {
+        remoteStreams[participant] = [remoteStream];
+    }else{
+        // Filter out any duplicates
+        remoteStreams[participant] = remoteStreams[participant].filter(rStream => rStream.stream.id !== remoteStream.stream.id);
 
-    // Add video element to stream area
-    const remoteVideo = videoTemplate.content.firstElementChild.cloneNode(true);
-    remoteVideo.id = `remote-video-${participant}`;
+        remoteStreams[participant].push(remoteStream); // Store the remote stream
+    }
 
-    streamArea.appendChild(remoteVideo);
+    const elementId = (remoteStream.streamType === 'media') ? `remote-video-${participant}` : `remote-video-display-${participant}`;
+
+    let remoteVideo = document.querySelector(`#${elementId}`);
+
+    if(!remoteVideo) {
+        // Add video element to stream area
+        remoteVideo = videoTemplate.content.firstElementChild.cloneNode(true);
+        remoteVideo.id = elementId;
+
+        const remoteDisplayEl = document.querySelector(`#remote-video-display-${participant}`);
+        const remoteVideoEl = document.querySelector(`#remote-video-${participant}`);
+
+        if(remoteStream.streamType === 'media' && remoteDisplayEl){
+            streamArea.insertBefore(remoteVideo, remoteDisplayEl);
+        }else if(remoteStream.streamType === 'display' && remoteVideoEl){
+            streamArea.insertBefore(remoteVideo, remoteVideoEl.nextSibling);
+        }else{
+            streamArea.appendChild(remoteVideo);
+        }
+    }
+
+    remoteVideo.srcObject = remoteStream.stream; // Set/Refresh the video element's src
 
     adjustCommAreaUi();
 }
 
 function removeRemoteStream(participant) {
-    let remoteStream = remoteStreams[participant];
-
-    if(!remoteStream) {
-        console.warn(participant, 'No remote stream found. Unable to remove.');
+    if(!remoteStreams[participant]) {
+        console.warn(participant, 'No remote streams found. Unable to remove.');
         return;
     }
 
-    remoteStream.getTracks().forEach(track => track.stop());
-
     let remoteVideo = document.querySelector(`#remote-video-${participant}`);
+    let remoteDisplayVideo = document.querySelector(`#remote-video-display-${participant}`)
 
     // Set srcObject to null to sever the link with the MediaStream so it can be released
-    remoteVideo.srcObject = null;
+    if(remoteVideo) remoteVideo.srcObject = null;
+    if(remoteDisplayVideo) remoteDisplayVideo.srcObject = null;
 
-    remoteStream = null;
+    remoteStreams[participant].forEach(remoteStream => {
+        remoteStream.stream.getTracks().forEach(track => track.stop());
+        remoteStream.stream = null;
+    });
+
     delete remoteStreams[participant];
 
     // Remove the video element from the stream area and remove the element reference
-    remoteVideo.remove();
-    remoteVideo = null;
+    if(remoteVideo) {
+        remoteVideo.remove();
+        remoteVideo = null;
+    }
+
+    if(remoteDisplayVideo) {
+        remoteDisplayVideo.remove();
+        remoteDisplayVideo = null;
+    }
 
     adjustCommAreaUi();
 }
