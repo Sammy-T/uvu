@@ -137,6 +137,16 @@ async function joinRoom() {
     const roomData = doc.data();
     console.log('Room', doc.id, roomData);
 
+    // Cancel joining if the room limit has already been reached
+    if(roomData.participants.length >= 4) {
+        const warning = 'Room limit reached. Unable to join.';
+        console.warn(warning);
+        popToast('warning', warning);
+
+        hangUp();
+        return;
+    }
+
     // Check for uid overlap (This should rarely need to be called if ever)
     while(roomData.participants.includes(localUid)) {
         localUid = Math.random().toString(36).slice(-8);
