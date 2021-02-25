@@ -26,9 +26,11 @@ const peerConnections = {};
 const dataChannels = {};
 
 let localStream = null;
+let localDisplayStream = null;
 const remoteStreams = {};
 
-const streamQueue = [];
+const localStreamQueue = [];
+const localDisplayStreamQueue = [];
 
 const participantNames = {};
 
@@ -47,7 +49,7 @@ const hangUpBtn = document.querySelector('#hang-up');
 const streamOptsForm = document.querySelector('#stream-options');
 const audioEnabledCheck = document.querySelector('#audio-enabled');
 const videoEnabledCheck = document.querySelector('#video-enabled');
-const videoOptions = document.querySelectorAll('.video-option');
+const screenShareEnabledCheck = document.querySelector('#screen-share-enabled');
 
 const streamArea = document.querySelector('#stream-area');
 const videoTemplate = document.querySelector('#template-video');
@@ -71,6 +73,7 @@ const usernameField = document.querySelector('#username');
 
 async function createRoom() {
     if(constraints.audio || constraints.video) await startStream();
+    if(screenShareEnabledCheck.checked) await startDisplayStream();
 
     roomRef = db.collection('pearmo-rooms').doc();
     connectionsRef = roomRef.collection('connections');
@@ -118,6 +121,7 @@ async function joinRoom() {
     }
 
     if(constraints.audio || constraints.video) await startStream();
+    if(screenShareEnabledCheck.checked) await startDisplayStream();
 
     // Retrieve the room data
     const roomData = doc.data();
@@ -196,10 +200,16 @@ async function createOffer(participant) {
     const dataChannel = peerConnection.createDataChannel('messages');
     dataChannels[participant] = dataChannel; // Map the data channel to the participant
 
-    // Add the local stream's tracks to the connection
+    // Add the local stream(s) tracks to the connection
     if(localStream) {
         localStream.getTracks().forEach(track => {
             peerConnection.addTrack(track, localStream);
+        });
+    }
+
+    if(localDisplayStream) {
+        localDisplayStream.getTracks().forEach(track => {
+            peerConnection.addTrack(track, localDisplayStream);
         });
     }
 
@@ -258,7 +268,8 @@ async function createAnswer(participant, connectionDoc) {
         // Queue adding tracks for later so that renegotiation is triggered
         // (This helps address the issue of the offerer not receiving the answerer's tracks
         // when the offerer hasn't created any media streams on the connection)
-        if(localStream) streamQueue.push(participant);
+        if(localStream) localStreamQueue.push(participant);
+        if(localDisplayStream) localDisplayStreamQueue.push(participant);
 
         // Start collecting ICE candidates
         await collectIceCandidates(connectionDoc.ref, participant, peerConnection);
@@ -352,15 +363,10 @@ async function collectIceCandidates(connectionDocRef, participant, peerConnectio
 
 function registerPeerConnectionListeners(participant, peerConnection) {
     peerConnection.addEventListener('track', event => {
-        console.log(participant, 'Got remote track', event.streams[0], event.streams);
+        console.log(participant, `Got ${event.streams.length} remote track(s)`, event.streams);
 
-        if(!remoteStreams[participant]) addRemoteStream(participant);
+        if(!remoteStreams[participant]) addRemoteStream(participant, event.streams[0]);
         const remoteStream = remoteStreams[participant];
-
-        event.streams[0].getTracks().forEach(track => {
-            console.log(participant, 'Adding track to remote stream', track);
-            remoteStream.addTrack(track);
-        });
 
         // Set/Refresh the video element's src
         const remoteVideo = document.querySelector(`#remote-video-${participant}`);
@@ -532,21 +538,7 @@ function sendMsg() {
 
 async function startStream() {
     try {
-        // Determine whether we're using the camera or screen share
-        const videoType = [...videoOptions].find(option => option.checked).value;
-
-        switch(videoType) {
-            case 'camera':
-                localStream = await navigator.mediaDevices.getUserMedia(constraints);
-                break;
-
-            case 'screen-share':
-                localStream = await navigator.mediaDevices.getDisplayMedia(constraints);
-                break;
-
-            default:
-                localStream = await navigator.mediaDevices.getUserMedia(constraints);
-        }
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
 
         // Add a video element to the stream area
         const localVideo = videoTemplate.content.firstElementChild.cloneNode(true);
@@ -563,6 +555,32 @@ async function startStream() {
         adjustCommAreaUi();
     } catch (error) {
         console.error('Error starting stream.', error);
+    }
+}
+
+async function startDisplayStream() {
+    try {
+        localDisplayStream = await navigator.mediaDevices.getDisplayMedia({video: true, audio: true});
+
+        // Add a video element to the stream area
+        const localDisplayVideo = videoTemplate.content.firstElementChild.cloneNode(true);
+        localDisplayVideo.id = 'local-display-video';
+        localDisplayVideo.muted = true;
+        localDisplayVideo.srcObject = localDisplayStream;
+
+        const localVideo = streamArea.querySelector('#local-video');
+
+        if(localVideo) {
+            streamArea.insertBefore(localDisplayVideo, localVideo.nextSibling);
+        }else if(streamArea.hasChildNodes()) {
+            streamArea.insertBefore(localDisplayVideo, streamArea.firstChild);
+        }else{
+            streamArea.appendChild(localDisplayVideo);
+        }
+
+        adjustCommAreaUi();
+    } catch (error) {
+        console.error('Error starting display stream.', error);
     }
 }
 
@@ -607,11 +625,27 @@ function stopStream() {
     adjustCommAreaUi();
 }
 
-function addRemoteStream(participant) {
+function stopDisplayStream() {
+    localDisplayStream.getTracks().forEach(track => track.stop());
+
+    let localDisplayVideo = document.querySelector('#local-display-video');
+
+    // Set srcObject to null to sever the link with the MediaStream so it can be released
+    localDisplayVideo.srcObject = null;
+
+    localDisplayStream = null;
+
+    // Remove the video element from the stream area and remove the element reference
+    localDisplayVideo.remove();
+    localDisplayVideo = null;
+
+    adjustCommAreaUi();
+}
+
+function addRemoteStream(participant, remoteStream) {
     console.log(participant, 'Creating new remote stream');
 
-    // Create a new stream
-    const remoteStream = new MediaStream();
+    // Store the remote stream
     remoteStreams[participant] = remoteStream;
 
     // Add video element to stream area
@@ -651,6 +685,7 @@ function removeRemoteStream(participant) {
 function hangUp() {
     // Stop streams
     if(localStream) stopStream();
+    if(localDisplayStream) stopDisplayStream();
 
     for(const participant in remoteStreams) {
         removeRemoteStream(participant);
@@ -781,7 +816,7 @@ function hideToast() {
 
 function adjustCommAreaUi() {
     // Show/Hide the stream area
-    if(audioEnabledCheck.checked || videoEnabledCheck.checked || streamArea.hasChildNodes()) {
+    if(audioEnabledCheck.checked || videoEnabledCheck.checked || screenShareEnabledCheck.checked || streamArea.hasChildNodes()) {
         streamArea.style.display = 'flex';
         chatArea.classList.remove('col-12');
         chatArea.classList.add('col-3');
@@ -1002,6 +1037,17 @@ function initStreamOptions() {
         });
     }
 
+    async function createNewDisplayStream() {
+        await startDisplayStream();
+
+        // Add the new stream's tracks to the connection
+        localDisplayStream.getTracks().forEach(track => {
+            for(const participant in peerConnections) {
+                peerConnections[participant].addTrack(track, localDisplayStream);
+            }
+        });
+    }
+
     audioEnabledCheck.addEventListener('change', function(event) {
         adjustCommAreaUi();
 
@@ -1037,11 +1083,18 @@ function initStreamOptions() {
         }
     });
 
-    videoOptions.forEach(optionEl => optionEl.addEventListener('change', function(event) {
-        // If there's already an active video stream,
-        // Signal participants to remove the stream, stop the stream locally, and create a new one
-        if(localStream && localStream.getVideoTracks().length > 0) refreshStream();
-    }));
+    screenShareEnabledCheck.addEventListener('change', function(event) {
+        adjustCommAreaUi();
+
+        if(createRoomBtn.disabled) {
+            if(this.checked && !localDisplayStream) {
+                createNewDisplayStream();
+            }else{
+                // Toggle the display tracks
+                localDisplayStream.getTracks().forEach(track => track.enabled = !track.enabled);
+            }
+        }
+    });
 }
 
 function init() {
