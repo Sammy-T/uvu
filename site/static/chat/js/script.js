@@ -633,15 +633,21 @@ async function startStream() {
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
 
         // Add a video element to the stream area
-        const localVideo = videoTemplate.content.firstElementChild.cloneNode(true);
-        localVideo.id = 'local-video';
+        const localVideoContainer = videoTemplate.content.firstElementChild.cloneNode(true);
+        const localVideo = localVideoContainer.querySelector('video');
+        const localStreamUser = localVideoContainer.querySelector('.stream-user');
+
+        localVideoContainer.id = 'local-video';
+
         localVideo.muted = true;
         localVideo.srcObject = localStream;
 
+        localStreamUser.innerText = username;
+
         if(streamArea.hasChildNodes()) {
-            streamArea.insertBefore(localVideo, streamArea.firstChild);
+            streamArea.insertBefore(localVideoContainer, streamArea.firstChild);
         }else{
-            streamArea.appendChild(localVideo);
+            streamArea.appendChild(localVideoContainer);
         }
 
         adjustCommAreaUi();
@@ -655,19 +661,25 @@ async function startDisplayStream() {
         localDisplayStream = await navigator.mediaDevices.getDisplayMedia({video: true, audio: true});
 
         // Add a video element to the stream area
-        const localDisplayVideo = videoTemplate.content.firstElementChild.cloneNode(true);
-        localDisplayVideo.id = 'local-display-video';
+        const localVideoContainer = videoTemplate.content.firstElementChild.cloneNode(true);
+        const localDisplayVideo = localVideoContainer.querySelector('video');
+        const localStreamUser = localVideoContainer.querySelector('.stream-user');
+
+        localVideoContainer.id = 'local-display-video';
+
         localDisplayVideo.muted = true;
         localDisplayVideo.srcObject = localDisplayStream;
 
-        const localVideo = streamArea.querySelector('#local-video');
+        localStreamUser.innerText = username;
 
-        if(localVideo) {
-            streamArea.insertBefore(localDisplayVideo, localVideo.nextSibling);
+        const localMediaVideoContainer = streamArea.querySelector('#local-video');
+
+        if(localMediaVideoContainer) {
+            streamArea.insertBefore(localVideoContainer, localMediaVideoContainer.nextSibling);
         }else if(streamArea.hasChildNodes()) {
-            streamArea.insertBefore(localDisplayVideo, streamArea.firstChild);
+            streamArea.insertBefore(localVideoContainer, streamArea.firstChild);
         }else{
-            streamArea.appendChild(localDisplayVideo);
+            streamArea.appendChild(localVideoContainer);
         }
 
         adjustCommAreaUi();
@@ -703,7 +715,8 @@ async function refreshStream() {
 function stopStream() {
     localStream.getTracks().forEach(track => track.stop());
 
-    let localVideo = document.querySelector('#local-video');
+    let localVideoContainer = document.querySelector('#local-video');
+    let localVideo = localVideoContainer.querySelector('video');
 
     // Set srcObject to null to sever the link with the MediaStream so it can be released
     localVideo.srcObject = null;
@@ -711,8 +724,8 @@ function stopStream() {
     localStream = null;
 
     // Remove the video element from the stream area and remove the element reference
-    localVideo.remove();
-    localVideo = null;
+    localVideoContainer.remove();
+    localVideoContainer = null;
 
     adjustCommAreaUi();
 }
@@ -720,7 +733,8 @@ function stopStream() {
 function stopDisplayStream() {
     localDisplayStream.getTracks().forEach(track => track.stop());
 
-    let localDisplayVideo = document.querySelector('#local-display-video');
+    let localVideoContainer = document.querySelector('#local-display-video');
+    let localDisplayVideo = localVideoContainer.querySelector('video');
 
     // Set srcObject to null to sever the link with the MediaStream so it can be released
     localDisplayVideo.srcObject = null;
@@ -728,8 +742,8 @@ function stopDisplayStream() {
     localDisplayStream = null;
 
     // Remove the video element from the stream area and remove the element reference
-    localDisplayVideo.remove();
-    localDisplayVideo = null;
+    localVideoContainer.remove();
+    localVideoContainer = null;
 
     adjustCommAreaUi();
 }
@@ -773,26 +787,30 @@ function addRemoteStream(participant, remoteStream) {
 
     const elementId = (remoteStream.streamType === 'media') ? `remote-video-${participant}` : `remote-video-display-${participant}`;
 
-    let remoteVideo = document.querySelector(`#${elementId}`);
+    let remoteVideoContainer = document.querySelector(`#${elementId}`);
 
-    if(!remoteVideo) {
+    if(!remoteVideoContainer) {
         // Add video element to stream area
-        remoteVideo = videoTemplate.content.firstElementChild.cloneNode(true);
-        remoteVideo.id = elementId;
+        remoteVideoContainer = videoTemplate.content.firstElementChild.cloneNode(true);
+        remoteVideoContainer.id = elementId;
 
-        const remoteDisplayEl = document.querySelector(`#remote-video-display-${participant}`);
-        const remoteVideoEl = document.querySelector(`#remote-video-${participant}`);
+        const remoteDisplayVideoContainer = document.querySelector(`#remote-video-display-${participant}`);
+        const remoteMediaVideoContainer = document.querySelector(`#remote-video-${participant}`);
 
-        if(remoteStream.streamType === 'media' && remoteDisplayEl){
-            streamArea.insertBefore(remoteVideo, remoteDisplayEl);
-        }else if(remoteStream.streamType === 'display' && remoteVideoEl){
-            streamArea.insertBefore(remoteVideo, remoteVideoEl.nextSibling);
+        if(remoteStream.streamType === 'media' && remoteDisplayVideoContainer){
+            streamArea.insertBefore(remoteVideoContainer, remoteDisplayVideoContainer);
+        }else if(remoteStream.streamType === 'display' && remoteMediaVideoContainer){
+            streamArea.insertBefore(remoteVideoContainer, remoteMediaVideoContainer.nextSibling);
         }else{
-            streamArea.appendChild(remoteVideo);
+            streamArea.appendChild(remoteVideoContainer);
         }
     }
 
+    const remoteVideo = remoteVideoContainer.querySelector('video');
+    const remoteStreamUser = remoteVideoContainer.querySelector('.stream-user');;
+
     remoteVideo.srcObject = remoteStream.stream; // Set/Refresh the video element's src
+    remoteStreamUser.innerText = remoteStream.username; // Set/Refresh the username chip
 
     adjustCommAreaUi();
 }
@@ -803,8 +821,11 @@ function removeRemoteStream(participant) {
         return;
     }
 
-    let remoteVideo = document.querySelector(`#remote-video-${participant}`);
-    let remoteDisplayVideo = document.querySelector(`#remote-video-display-${participant}`)
+    let remoteVideoContainer = document.querySelector(`#remote-video-${participant}`);
+    let remoteDisplayVideoContainer = document.querySelector(`#remote-video-display-${participant}`);
+
+    let remoteVideo = (remoteVideoContainer) ? remoteVideoContainer.querySelector('video') : null;
+    let remoteDisplayVideo = (remoteDisplayVideoContainer) ? remoteDisplayVideoContainer.querySelector('video') : null;
 
     // Set srcObject to null to sever the link with the MediaStream so it can be released
     if(remoteVideo) remoteVideo.srcObject = null;
@@ -817,15 +838,15 @@ function removeRemoteStream(participant) {
 
     delete remoteStreams[participant];
 
-    // Remove the video element from the stream area and remove the element reference
-    if(remoteVideo) {
-        remoteVideo.remove();
-        remoteVideo = null;
+    // Remove the container elements from the stream area and remove the element references
+    if(remoteVideoContainer) {
+        remoteVideoContainer.remove();
+        remoteVideoContainer = null;
     }
 
-    if(remoteDisplayVideo) {
-        remoteDisplayVideo.remove();
-        remoteDisplayVideo = null;
+    if(remoteDisplayVideoContainer) {
+        remoteDisplayVideoContainer.remove();
+        remoteDisplayVideoContainer = null;
     }
 
     adjustCommAreaUi();
@@ -975,17 +996,17 @@ function adjustCommAreaUi() {
         chatArea.classList.add('col-12');
     }
 
-    const streamVideos = document.querySelectorAll('#stream-area video');
+    const videoContainers = document.querySelectorAll('#stream-area [class^="video-container"]');
     
     // Style the video elements to scale along with their amount
-    if(streamVideos.length > 1) {
-        streamVideos.forEach(video => {
-            video.classList.remove('stream-video-single');
-            video.classList.add('stream-video');
+    if(videoContainers.length > 1) {
+        videoContainers.forEach(container => {
+            container.classList.remove('video-container-single');
+            container.classList.add('video-container');
         });
-    }else if(streamVideos.length === 1) {
-        streamVideos[0].classList.remove('stream-video');
-        streamVideos[0].classList.add('stream-video-single');
+    }else if(videoContainers.length === 1) {
+        videoContainers[0].classList.remove('video-container');
+        videoContainers[0].classList.add('video-container-single');
     }
 }
 

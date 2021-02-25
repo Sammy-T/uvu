@@ -25,14 +25,24 @@ main {
 }
 
 #stream-area video {
+    width: 100%;
+}
+
+#stream-area .chip {
+    position: absolute;
+    z-index: 1;
+    margin: 0.25rem;
+}
+
+#stream-area [class^="video-container"] {
     flex-grow: 1;
 }
 
-.stream-video {
+.video-container {
     max-width: 50%;
 }
 
-.stream-video-single {
+.video-container-single {
     max-width: inherit;
 }
 

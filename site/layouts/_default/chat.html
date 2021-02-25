@@ -68,9 +68,13 @@
 <section id="comm-area" class="columns">
     <!-- Stream(s) -->
     <div id="stream-area" class="column col-9 col-md-12 bg-gray"></div>
+
     <!-- Video template -->
     <template id="template-video">
-        <video class="stream-video-single" autoplay playsinline controls></video>
+        <div class="video-container-single">
+            <div class="chip stream-user">Username</div>
+            <video autoplay playsinline controls></video>
+        </div>
     </template>
 
     <!-- Chat -->
