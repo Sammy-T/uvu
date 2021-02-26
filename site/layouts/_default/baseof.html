@@ -39,9 +39,11 @@
 
   {{ block "header" . }}{{ partial "header" . }}{{ end }}
 
+  {{ block "main" . }}
   <main class="container grid-lg">
-    {{ block "main" . }}{{end}}
+    {{ block "main-content" . }}{{ end }}
   </main>
+  {{ end }}
 
   {{ block "footer" . }}{{ partial "footer" . }}{{ end }}
 </body>
