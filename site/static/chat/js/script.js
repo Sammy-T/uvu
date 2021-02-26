@@ -1093,6 +1093,32 @@ function initShareModal() {
         window.getSelection().empty(); // Clear the selection
     }
 
+    document.querySelector('#share-gmail').addEventListener('click', event => {
+        const roomId = roomIdInput.value;
+        const shareLink = `${window.location.href}?room=${roomId}`;
+
+        const subject = `Join me on Pearmo`;
+        const body = `Join my Pearmo chat room at\n${shareLink}`;
+
+        const gmailLink = `https://mail.google.com/mail/?view=cm&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.open(gmailLink);
+
+        shareModal.classList.remove('active');
+    });
+
+    document.querySelector('#share-default').addEventListener('click', event => {
+        const roomId = roomIdInput.value;
+        const shareLink = `${window.location.href}?room=${roomId}`;
+
+        const subject = `Join me on Pearmo`;
+        const body = `Join my Pearmo chat room at\n${shareLink}`;
+
+        const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.open(mailtoLink);
+
+        shareModal.classList.remove('active');
+    });
+
     document.querySelector('#share-copy-link').addEventListener('click', event => {
         const roomId = roomIdInput.value;
         const shareLink = `${window.location.href}?room=${roomId}`;
