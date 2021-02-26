@@ -1091,6 +1091,8 @@ function initShareModal() {
         document.execCommand('copy');
 
         window.getSelection().empty(); // Clear the selection
+
+        popToast(null, 'Copied to clipboard');
     }
 
     document.querySelector('#share-gmail').addEventListener('click', event => {
