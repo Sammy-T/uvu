@@ -23,17 +23,25 @@
     <script src="{{ relURL . }}" defer></script>
   {{ end }}
 
+  <link rel="stylesheet" href="{{ `/css/styles.css` | relURL }}">
+
   {{ block "page-head" . }}{{ end }}
 </head>
 
 <body>
-  {{ block "nav" . }}{{ end }}
+  {{ block "nav" . }}
+  <header class="navbar">
+    <section class="navbar-section">
+        <a href="{{ `/` | relURL }}" class="navbar-brand mr-2">Pearmo</a>
+    </section>
+  </header>
+  {{ end }}
 
   {{ block "header" . }}{{ partial "header" . }}{{ end }}
 
   <main class="container grid-lg">
     {{ block "main" . }}{{end}}
-  </div>
+  </main>
 
   {{ block "footer" . }}{{ partial "footer" . }}{{ end }}
 </body>

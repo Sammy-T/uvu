@@ -1,0 +1,15 @@
+header {
+    padding: 1em;
+    border-bottom: 1px solid #5755d9;
+}
+
+main {
+    min-height: 83vh;
+    padding-top: 2em;
+}
+
+footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
