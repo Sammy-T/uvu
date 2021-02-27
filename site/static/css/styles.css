@@ -29,6 +29,10 @@ main {
     max-width: 250px;
 }
 
+.lead-link {
+    border-radius: 0.25rem;
+}
+
 .features {
     display: flex;
     justify-content: space-around;
