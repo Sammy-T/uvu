@@ -1,9 +1,36 @@
+{{ define "header" }}
+<header class="hero bg-primary">
+    <section class="hero-body">
+        <img class="lead-logo p-centered" src="{{ `/img/pearmo-logo.png` | relURL }}" alt="Pearmo logo">
+
+        <p class="text-center">
+            Pearmo is a peer-to-peer chat and conferencing platform with temporary rooms.
+            <br/>
+            <br/>
+            <a href="{{ `/chat` | relURL }}" class="btn">Start Chatting</a>
+        </p>
+    </section>
+</header>
+{{ end }}
+
 {{ define "main-content" }}
-<h1>Hugo with Webpack, Sass, and PostCSS</h1>
+<h3>Features</h3>
+<section class="features">
+    <article>
+        <img src="{{ `/img/video-outline.svg` | relURL }}" alt="Video conferencing icon">
+        <h6>Video & Audio Conferencing</h6>
+    </article>
 
-<h3>Hooray 🎉 - you've built this with <a href="https://github.com/netlify/victor-hugo">Victor-Hugo</a>!</h3>
+    <article>
+        <img src="{{ `/img/monitor-share.svg` | relURL }}" alt="Screen sharing icon">
+        <h6>Screen Sharing</h6>
+    </article>
 
-<a href="{{ `/tech` | relURL }}">Check out the tech</a>
-<br />
-<a href="{{ `/chat` | relURL }}">Chat page</a>
+    <article>
+        <img src="{{ `/img/forum-outline.svg` | relURL }}" alt="text chat icon">
+        <h6>Text chat</h6>
+    </article>
+</section>
+
+<h5 class="text-primary text-center">Pearmo rooms are single serving sessions with no sign up necessary.</h5>
 {{ end }}

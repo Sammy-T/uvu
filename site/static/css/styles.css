@@ -1,11 +1,48 @@
 header {
     padding: 1em;
+}
+
+.navbar {
     border-bottom: 1px solid #5755d9;
+}
+
+.main-brand {
+    display: flex;
+    align-items: center;
+}
+
+.main-brand img {
+    width: 2rem;
+}
+
+.main-brand h5 {
+    margin: 0 0.15em;
 }
 
 main {
     min-height: 83vh;
     padding-top: 2em;
+}
+
+.lead-logo {
+    width:  50vw;
+    max-width: 250px;
+}
+
+.features {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    margin-top: 2rem;
+    margin-bottom: 5rem;
+}
+
+.features article {
+    width: 25vw;
+}
+
+.features article img {
+    width: 45%;
 }
 
 footer {

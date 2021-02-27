@@ -15,7 +15,10 @@
 {{ define "nav" }}
 <header class="navbar">
     <section class="navbar-section">
-        <a href="{{ `/` | relURL }}" class="navbar-brand mr-2">Pearmo</a>
+        <a href="{{ `/` | relURL }}" class="navbar-brand mr-2 main-brand">
+          <img src="{{ `/img/pearmo-logo-color.png` | relURL }}" alt="Pearmo logo">
+          <h5>Pearmo</h5>
+        </a>
     </section>
 
     <!-- Room id -->
