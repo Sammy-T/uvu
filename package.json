@@ -1,8 +1,8 @@
 {
-  "name": "victor-hugo",
+  "name": "pearmo",
   "version": "1.0.0",
-  "description": "Victor Hugo is a Hugo boilerplate for creating truly epic websites!",
-  "repository": "netlify/victor-hugo",
+  "description": "Pearmo is a peer-to-peer chat website.",
+  "repository": "github:Sammy-T/Pearmo",
   "main": "index.js",
   "scripts": {
     "lint": "eslint src",
@@ -19,7 +19,7 @@
     "build:hugo:preview": "npm run build:hugo -- -D -F",
     "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.prod.js"
   },
-  "author": "",
+  "author": "Sammy Telusma",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.12.3",
