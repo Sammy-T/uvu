@@ -37,7 +37,8 @@
           <h5>Pearmo</h5>
         </a>
 
-        {{ range where .Site.Pages "Title" "!=" $.Site.Title }}
+        {{ $navpages := where .Site.Pages.ByWeight "Title" "!=" $.Site.Title }}
+        {{ range $navpages }}
         <a href="{{ .RelPermalink }}" class="btn btn-link">{{ .Title }}</a>
         {{ end }}
     </section>
