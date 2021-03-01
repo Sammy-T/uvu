@@ -1,6 +1,7 @@
 ---
 title: "About"
 date: 2021-02-28T17:25:00-05:00
+description: "Pearmo enables users to communicate via peer-to-peer connections."
 weight: 2
 draft: false
 ---

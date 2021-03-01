@@ -7,12 +7,23 @@
   <base href="{{ if getenv `CONTEXT` }}{{ cond (eq `production` (getenv `CONTEXT`)) (getenv `URL`) (getenv `DEPLOY_PRIME_URL`) }}{{ else }}{{ $.Site.BaseURL }}{{ end }}">
   
   <title>
-    {{ if eq .Title $.Site.Title }}
-      {{ .Title }} chat &amp; conferencing
-    {{ else }}
+    {{- if .IsHome -}}
+      {{ $.Site.Title }} chat &amp; conferencing
+    {{- else -}}
       {{ $.Site.Title }} - {{ .Title }}
-    {{ end }}
+    {{- end -}}
   </title>
+  
+  {{- $description := "" -}}
+  {{- if .IsHome -}}
+    {{- $description = "Pearmo is a chat and conferencing platform with no sign up." -}}
+  {{- else if (isset .Params "description") -}}
+    {{- $description = .Param "description" -}}
+  {{- end -}}
+
+  {{ if ne $description "" }}
+  <meta name="description" content="{{ $description }}">
+  {{ end }}
 
   <!-- Spectre -->
   <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
