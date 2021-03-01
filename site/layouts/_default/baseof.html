@@ -6,7 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <base href="{{ if getenv `CONTEXT` }}{{ cond (eq `production` (getenv `CONTEXT`)) (getenv `URL`) (getenv `DEPLOY_PRIME_URL`) }}{{ else }}{{ $.Site.BaseURL }}{{ end }}">
   
-  <title>{{ $.Site.Title }}</title>
+  <title>
+    {{ if eq .Title $.Site.Title }}
+      {{ .Title }} chat &amp; conferencing
+    {{ else }}
+      {{ $.Site.Title }} - {{ .Title }}
+    {{ end }}
+  </title>
 
   <!-- Spectre -->
   <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
