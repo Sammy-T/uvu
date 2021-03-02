@@ -44,7 +44,9 @@
 
   {{ block "page-head" . }}{{ end }}
 
-  {{ partial "umami" . }}
+  {{- if eq .Hugo.Environment "production" -}}
+    {{ partial "umami" . }}
+  {{- end -}}
 </head>
 
 <body>
