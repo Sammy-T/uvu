@@ -23,22 +23,22 @@
 
   {{ if ne $description "" }}
   <meta name="description" content="{{ $description }}">
-  {{ end }}
+  {{- end }}
 
   <!-- Spectre -->
   <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
   <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
   <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
 
-  {{ $stylesheet := .Site.Data.webpack.main }}
+  {{- $stylesheet := .Site.Data.webpack.main }}
   {{ with $stylesheet.css }}
     <link href="{{ relURL . }}" rel="stylesheet">
-  {{ end }}
+  {{- end }}
 
-  {{ $script := .Site.Data.webpack.main }}
+  {{- $script := .Site.Data.webpack.main }}
   {{ with $script.js }}
     <script src="{{ relURL . }}" defer></script>
-  {{ end }}
+  {{- end }}
 
   <link rel="stylesheet" href="{{ `/css/styles.css` | relURL }}">
 
@@ -46,11 +46,11 @@
 
   {{- if eq .Hugo.Environment "production" -}}
     {{ partial "umami" . }}
-  {{- end -}}
+  {{- end }}
 </head>
 
 <body>
-  {{ block "nav" . }}
+  {{- block "nav" . }}
   <header class="navbar">
     <section class="navbar-section">
         <a href="{{ `/` | relURL }}" class="navbar-brand mr-2 main-brand">
@@ -58,21 +58,21 @@
           <h5>Pearmo</h5>
         </a>
 
-        {{ $navpages := where .Site.Pages.ByWeight "Title" "!=" $.Site.Title }}
+        {{- $navpages := where .Site.Pages.ByWeight "Title" "!=" $.Site.Title }}
         {{ range $navpages }}
         <a href="{{ .RelPermalink }}" class="btn btn-link">{{ .Title }}</a>
-        {{ end }}
+        {{- end }}
     </section>
   </header>
-  {{ end }}
+  {{- end }}
 
   {{ block "header" . }}{{ partial "header" . }}{{ end }}
 
-  {{ block "main" . }}
+  {{- block "main" . }}
   <main class="container grid-lg">
-    {{ block "main-content" . }}{{ end }}
+    {{- block "main-content" . }}{{ end -}}
   </main>
-  {{ end }}
+  {{- end }}
 
   {{ block "footer" . }}{{ partial "footer" . }}{{ end }}
 </body>
