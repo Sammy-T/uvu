@@ -16,8 +16,6 @@ Connection information is temporarily stored on Pearmo's servers to establish an
 
 Message and media stream contents are transferred through the peer connections and do not pass through Pearmo's servers.
 
-Pearmo uses Umami for website analytics and Google Adsense for advertising.
-You can view information about Umami and Google privacy by visiting the following links:
+Pearmo uses Umami for website analytics. You can view information about Umami by visiting the following link:
 
 - [Umami](https://umami.is/docs/faq)
-- [Google](https://policies.google.com/privacy)
