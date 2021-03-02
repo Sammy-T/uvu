@@ -18,4 +18,4 @@ Message and media stream contents are transferred through the peer connections a
 
 Pearmo uses Umami for website analytics. You can view information about Umami by visiting the following link:
 
-- [Umami](https://umami.is/docs/faq)
+- {{< blanklink href="https://umami.is/docs/faq" text="Umami" >}}
