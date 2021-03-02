@@ -1,7 +1,7 @@
 {{ define "page-head" }}
 
 {{- $firebaseInit := "/__/firebase/init.js" -}}
-{{- if eq .Hugo.Environment "development" -}}
+{{- if eq hugo.Environment "development" -}}
     {{- $firebaseInit = "/__/firebase/init.js?useEmulator=true" -}}
 {{- end -}}
 
