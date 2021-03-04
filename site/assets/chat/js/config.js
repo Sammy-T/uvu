@@ -1,0 +1,1 @@
+const dbRoot = 'pearmo-rooms';

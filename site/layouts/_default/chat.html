@@ -1,8 +1,11 @@
 {{ define "page-head" }}
 
 {{- $firebaseInit := "/__/firebase/init.js" -}}
+{{- $configPath := "chat/js/config.js" -}}
+
 {{- if eq hugo.Environment "development" -}}
     {{- $firebaseInit = "/__/firebase/init.js?useEmulator=true" -}}
+    {{- $configPath = "chat/js/config-dev.js" -}}
 {{- end -}}
 
 <!-- Firebase -->
@@ -15,6 +18,8 @@
 
 <link rel="stylesheet" href="{{ `/chat/css/styles.css` | relURL }}">
 
+{{ $config := resources.Get $configPath -}}
+<script src="{{ $config.RelPermalink }}" defer></script>
 <script src="{{ `/chat/js/script.js` | relURL }}" defer></script>
 {{ end }}
 

@@ -85,7 +85,7 @@ async function createRoom() {
     if(constraints.audio || constraints.video) await startStream();
     if(screenShareEnabledCheck.checked) await startDisplayStream();
 
-    roomRef = db.collection('pearmo-rooms').doc();
+    roomRef = db.collection(dbRoot).doc();
     connectionsRef = roomRef.collection('connections');
 
     roomIdInput.value = roomRef.id;
@@ -118,7 +118,7 @@ async function joinRoom() {
         return;
     }
 
-    roomRef = db.collection('pearmo-rooms').doc(roomIdInput.value);
+    roomRef = db.collection(dbRoot).doc(roomIdInput.value);
     connectionsRef = roomRef.collection('connections');
 
     const doc = await roomRef.get();
