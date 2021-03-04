@@ -6,6 +6,10 @@ header {
     border-bottom: 1px solid #5755d9;
 }
 
+.navbar-section, .navbar-center {
+    max-width: 100%;
+}
+
 .main-brand {
     display: flex;
     align-items: center;
