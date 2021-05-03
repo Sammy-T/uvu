@@ -22,25 +22,18 @@
         {{ if ne $description "" }}
         <meta name="description" content="{{ $description }}">
         {{- end }}
-    
-        <!-- Spectre -->
-        <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
-        <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
-        <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
 
-        {{/* // Remove processing
         <!-- Process CSS files with PostCSS -->
         <!-- More details: https://gohugo.io/hugo-pipes/postcss/ -->
         {{ $style := resources.Get "css/main.css" | resources.PostCSS }}
         <link rel="stylesheet" href="{{ $style.RelPermalink }}">
 
+        {{/* // Remove js processing
         <!-- Process JavaScript files with ESBuild -->
         <!-- More details: https://gohugo.io/hugo-pipes/js/ -->
         {{ $built := resources.Get "js/index.js" | js.Build "main.js" }}
         <script src="{{ $built.RelPermalink }}" defer></script>
         */}}
-
-        <link rel="stylesheet" href="{{ `/css/styles.css` | relURL }}">
 
         {{ block "page-head" . }}{{ end }}
 

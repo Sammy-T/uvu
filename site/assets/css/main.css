@@ -1,31 +1,66 @@
 /* Import external stylesheets */
-@import 'milligram/dist/milligram.min.css';
+@import 'spectre.css/dist/spectre.min.css';
+@import 'spectre.css/dist/spectre-exp.min.css';
+@import 'spectre.css/dist/spectre-icons.min.css';
 
 /* Additional styling */
-main.container {
-    padding: 2rem 3rem;
+header {
+    padding: 1em;
 }
 
-.billboard {
-    border-radius: 1rem;
-    margin-bottom: 2rem;
-    padding: 5rem;
-    background-color:slategray;
-    color: whitesmoke;
+.navbar {
+    border-bottom: 1px solid #5755d9;
+}
+
+.navbar-section, .navbar-center {
+    max-width: 100%;
+}
+
+.main-brand {
+    display: flex;
+    align-items: center;
+}
+
+.main-brand img {
+    width: 2rem;
+}
+
+.main-brand h5 {
+    margin: 0 0.15em;
+}
+
+main {
+    min-height: 83vh;
+    padding-top: 2em;
+}
+
+.lead-logo {
+    width:  50vw;
+    max-width: 250px;
+}
+
+.lead-link {
+    border-radius: 0.25rem;
+}
+
+.features {
+    display: flex;
+    justify-content: space-around;
     text-align: center;
+    margin-top: 2rem;
+    margin-bottom: 5rem;
 }
 
-nav {
-    text-align: center;
-    margin: 3rem 0;
+.features article {
+    width: 25vw;
 }
 
-.page-title {
-    text-align: center;
+.features article img {
+    width: 45%;
 }
 
-article {
-    border: 1px solid #9b4dca;
-    border-radius: 1.5rem;
-    padding: 2rem;
+footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
 }
