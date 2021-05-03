@@ -1,79 +1,77 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="{{ $.Site.Language.Lang }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <base href="{{ if getenv `CONTEXT` }}{{ cond (eq `production` (getenv `CONTEXT`)) (getenv `URL`) (getenv `DEPLOY_PRIME_URL`) }}{{ else }}{{ $.Site.BaseURL }}{{ end }}">
-  
-  <title>
-    {{- if .IsHome -}}
-      {{ $.Site.Title }} chat &amp; conferencing
-    {{- else -}}
-      {{ $.Site.Title }} - {{ .Title }}
-    {{- end -}}
-  </title>
-  
-  {{- $description := "" -}}
-  {{- if .IsHome -}}
-    {{- $description = "Pearmo is a chat and conferencing platform with no sign up." -}}
-  {{- else if (isset .Params "description") -}}
-    {{- $description = .Param "description" -}}
-  {{- end -}}
-
-  {{ if ne $description "" }}
-  <meta name="description" content="{{ $description }}">
-  {{- end }}
-
-  <!-- Spectre -->
-  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
-
-  {{- $stylesheet := .Site.Data.webpack.main }}
-  {{ with $stylesheet.css }}
-    <link href="{{ relURL . }}" rel="stylesheet">
-  {{- end }}
-
-  {{- $script := .Site.Data.webpack.main }}
-  {{ with $script.js }}
-    <script src="{{ relURL . }}" defer></script>
-  {{- end }}
-
-  <link rel="stylesheet" href="{{ `/css/styles.css` | relURL }}">
-
-  {{ block "page-head" . }}{{ end }}
-
-  {{- if eq hugo.Environment "production" -}}
-    {{ partial "umami" . }}
-  {{- end }}
-</head>
-
-<body>
-  {{- block "nav" . }}
-  <header class="navbar">
-    <section class="navbar-section">
-        <a href="{{ `/` | relURL }}" class="navbar-brand mr-2 main-brand">
-          <img src="{{ `/img/pearmo-logo-color.png` | relURL }}" alt="Pearmo logo">
-          <h5>Pearmo</h5>
-        </a>
-
-        {{- $navpages := where .Site.Pages.ByWeight "Title" "!=" $.Site.Title }}
-        {{ range $navpages }}
-        <a href="{{ .RelPermalink }}" class="btn btn-link">{{ .Title }}</a>
+        <title>
+            {{- if .IsHome -}}
+                {{ $.Site.Title }} chat &amp; conferencing
+            {{- else -}}
+                {{ $.Site.Title }} - {{ .Title }}
+            {{- end -}}
+        </title>
+        
+        {{- $description := "" -}}
+        {{- if .IsHome -}}
+            {{- $description = "Pearmo is a chat and conferencing platform with no sign up." -}}
+        {{- else if (isset .Params "description") -}}
+            {{- $description = .Param "description" -}}
+        {{- end -}}
+    
+        {{ if ne $description "" }}
+        <meta name="description" content="{{ $description }}">
         {{- end }}
-    </section>
-  </header>
-  {{- end }}
+    
+        <!-- Spectre -->
+        <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+        <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
+        <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
 
-  {{ block "header" . }}{{ partial "header" . }}{{ end }}
+        {{/* // Remove processing
+        <!-- Process CSS files with PostCSS -->
+        <!-- More details: https://gohugo.io/hugo-pipes/postcss/ -->
+        {{ $style := resources.Get "css/main.css" | resources.PostCSS }}
+        <link rel="stylesheet" href="{{ $style.RelPermalink }}">
 
-  {{- block "main" . }}
-  <main class="container grid-lg">
-    {{- block "main-content" . }}{{ end -}}
-  </main>
-  {{- end }}
+        <!-- Process JavaScript files with ESBuild -->
+        <!-- More details: https://gohugo.io/hugo-pipes/js/ -->
+        {{ $built := resources.Get "js/index.js" | js.Build "main.js" }}
+        <script src="{{ $built.RelPermalink }}" defer></script>
+        */}}
 
-  {{ block "footer" . }}{{ partial "footer" . }}{{ end }}
-</body>
+        <link rel="stylesheet" href="{{ `/css/styles.css` | relURL }}">
+
+        {{ block "page-head" . }}{{ end }}
+
+        {{- if eq hugo.Environment "production" -}}
+            {{ partial "umami" . }}
+        {{- end }}
+    </head>
+
+    <body>
+        {{- block "nav" . }}
+        <header class="navbar">
+            <section class="navbar-section">
+                <a href="{{ `/` | relURL }}" class="navbar-brand mr-2 main-brand">
+                <img src="{{ `/img/pearmo-logo-color.png` | relURL }}" alt="Pearmo logo">
+                <h5>Pearmo</h5>
+                </a>
+
+                {{- $navpages := where .Site.Pages.ByWeight "Title" "!=" $.Site.Title }}
+                {{ range $navpages }}
+                <a href="{{ .RelPermalink }}" class="btn btn-link">{{ .Title }}</a>
+                {{- end }}
+            </section>
+        </header>
+        {{- end }}
+
+        {{ block "header" . }}{{ partial "header" . }}{{ end }}
+
+        {{- block "main" . }}
+        <main class="container grid-lg">{{- block "main-content" . }}{{ end -}}</main>
+        {{- end }}
+
+        {{ block "footer" . }}{{ partial "footer" . }}{{ end }}
+    </body>
 </html>
