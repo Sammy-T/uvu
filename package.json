@@ -11,7 +11,8 @@
     "dev:firebase": "firebase emulators:start",
     "prebuild": "rimraf dist",
     "build": "hugo -s site",
-    "build:preview": "npm run prebuild && hugo -D -e development -s site"
+    "build:preview": "npm run prebuild && hugo -D -e development -s site",
+    "deploy": "npm run build && firebase deploy"
   },
   "keywords": [],
   "author": "Sammy Telusma",
