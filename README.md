@@ -6,7 +6,7 @@ This project is configured to be tested and deployed using Firebase.
 ## Getting Started
 
 ### Prerequisites
-The project must be set up with Firebase and the environment must have Firebase Tools cli installed to interact with emulators, hosting, and the database.
+The project must be set up with Firebase and Firebase Tools cli must be installed to interact with emulators, hosting, and the database.
 
 Then, install packages with:
 ```bash
