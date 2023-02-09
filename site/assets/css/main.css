@@ -5,3 +5,28 @@
 :root {
     --navbar-brand-image-height: 4rem;
 }
+
+header {
+    display: flex;
+    height: 90vh;
+}
+
+header>section {
+    width: 50vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2.5rem;
+    padding: 5rem;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 3rem;
+}
+
+header img {
+    max-width: 100px;
+    max-height: 100px;
+}
