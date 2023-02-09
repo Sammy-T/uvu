@@ -4,6 +4,8 @@
 /* Additional styling */
 :root {
     --navbar-brand-image-height: 4rem;
+    --dm-base-text-color: white;
+    --header-graphic-img-margin: 2rem;
 }
 
 header {
@@ -26,7 +28,32 @@ header h1 {
     font-size: 3rem;
 }
 
-header img {
-    max-width: 100px;
-    max-height: 100px;
+#header-graphic {
+    position: relative;
+    padding: 0;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 0;
+}
+
+#header-graphic img {
+    width: 50%;
+    margin-top: var(--header-graphic-img-margin);
+    border-radius: 2rem;
+}
+
+#header-graphic img:last-of-type{
+    align-self: flex-start;
+    width: 63%;
+    margin-top: 0;
+    margin-bottom: var(--header-graphic-img-margin);
+}
+
+#graphic-bg {
+    position: absolute;
+    z-index: -1;
+    align-self: flex-end;
+    height: 100%;
+    width: 90%;
+    background-color: #55ddffff;
 }
