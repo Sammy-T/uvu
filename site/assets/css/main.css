@@ -10,7 +10,7 @@
 
 header {
     display: flex;
-    height: 90vh;
+    min-height: 90vh;
 }
 
 header>section {
@@ -33,7 +33,7 @@ header h1 {
     padding: 0;
     justify-content: space-between;
     align-items: flex-end;
-    gap: 0;
+    gap: 3rem;
 }
 
 #header-graphic img {
