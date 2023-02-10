@@ -43,6 +43,8 @@
     </head>
 
     <body class="dark-mode">
+        {{ block "modals" . }}{{ end }}
+
         <div class="page-wrapper with-navbar">
             {{- block "nav" . }}
             <nav class="navbar">

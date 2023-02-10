@@ -109,6 +109,15 @@
     margin-bottom: 1rem;
 }
 
+.modal-title {
+    text-align: center;
+}
+
+.modal section {
+    display: flex;
+    flex-direction: column;
+}
+
 @media (min-width: 720px) {
     #comm-area {
         flex-direction: row;
