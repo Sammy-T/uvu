@@ -2,8 +2,10 @@
     justify-content: space-between;
 }
 
-#user-avatar {
-    background: var(--primary-color);
-    padding: 1rem;
-    border-radius: 2rem;
+#chat-opts>* {
+    padding: 1rem 0;
+}
+
+#chat-opts form {
+    gap: 2rem;
 }

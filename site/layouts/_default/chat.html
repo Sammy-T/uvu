@@ -46,40 +46,38 @@
     <!-- User Info -->
     <!-- TODO: Re-implement logic -->
     <div class="navbar-content">
-        <div id="user-avatar">UN</div>
+        <button id="user-avatar" class="btn btn-square btn-primary rounded-circle">UN</button>
     </div>
 </nav>
 {{end}}
 
 {{ define "main-content" }}
-<!-- Room Actions -->
-<section id="room-actions">
-    <button id="create-room" class="btn btn-primary">Create Room</button>
-    <button id="join-room" class="btn btn-primary">Join Room</button>
-    <button id="hang-up" class="btn btn-primary" disabled>Hang up</button>
-</section>
+<div id="chat-opts" class="container">
+    <!-- Room Actions -->
+    <section id="room-actions">
+        <button id="create-room" class="btn btn-primary">Create Room</button>
+        <button id="join-room" class="btn btn-primary">Join Room</button>
+        <button id="hang-up" class="btn btn-primary" disabled>Hang up</button>
+    </section>
 
-<!-- Stream Options -->
-<form id="stream-options">
-    <div class="form-group clearfix">
-        <label class="form-switch form-inline">
+    <!-- Stream Options -->
+    <form id="stream-options" class="form-inline">
+        <div class="custom-switch">
             <input type="checkbox" id="audio-enabled" name="audio-enabled">
-            <i class="form-icon"></i>Audio
-        </label>
-        <label class="form-switch form-inline">
+            <label for="audio-enabled">Audio</label>
+        </div>
+        <div class="custom-switch">
             <input type="checkbox" id="video-enabled" name="video-enabled">
-            <i class="form-icon"></i>Video
-        </label>
-        <label class="form-switch form-inline">
+            <label for="video-enabled">Video</label>
+        </div>
+        <div class="custom-switch">
             <input type="checkbox" id="screen-share-enabled" name="screen-share-enabled">
-            <i class="form-icon"></i>Screen Share
-        </label>
+            <label for="screen-share-enabled">Screen Share</label>
+        </div>
 
-        <button id="more-options" class="btn btn-action float-right">
-            <i class="icon icon-more-vert"></i>
-        </button>
-    </div>
-</form>
+        <button class="btn">Options</button>
+    </form>
+</div>
 
 <!-- Communication Area -->
 <section id="comm-area" class="columns">
