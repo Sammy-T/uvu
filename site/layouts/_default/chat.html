@@ -14,38 +14,41 @@
 <script src="{{ $firebaseInit }}" defer></script>
 
 <!-- WebRTC Adapter -->
-<script src="{{ `/chat/js/adapter.js` | relURL }}" defer></script>
+<script src="{{ `chat/js/adapter.js` | relURL }}" defer></script>
 
-<link rel="stylesheet" href="{{ `/chat/css/styles.css` | relURL }}">
+<link rel="stylesheet" href="{{ `chat/css/styles.css` | relURL }}">
 
 {{ $config := resources.Get $configPath -}}
 <script src="{{ $config.RelPermalink }}" defer></script>
-<script src="{{ `/chat/js/script.js` | relURL }}" defer></script>
+<script src="{{ `chat/js/script.js` | relURL }}" defer></script>
 {{ end }}
 
 {{ define "nav" }}
-<header class="navbar">
-    <section class="navbar-section">
-        <a href="{{ `/` | relURL }}" class="navbar-brand mr-2 main-brand">
-          <img src="{{ `/img/pearmo-logo-color.png` | relURL }}" alt="Pearmo logo">
-          <h5>Pearmo</h5>
-        </a>
-    </section>
+<nav class="navbar chat-nav">
+    <a href="{{ `` | relURL }}" class="navbar-brand">
+        <img src="{{ `img/pearrd-logo.svg` | relURL }}" alt="Pearrd logo" width="50" height="50">
+        Pearrd
+    </a>
 
-    <!-- Room id -->
-    <section class="navbar-center">
-        <div class="input-group input-inline">
-            <span class="input-group-addon">Room ID:</span>
-            <input id="room-id-input" type="text" class="form-input" placeholder="Joinable room id">
-            <button id="share-id-btn" class="btn btn-primary input-group-btn">Share</button>
+    <!-- Room ID -->
+    <form class="form-inline">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Room ID</span>
+            </div>
+            <input id="room-id-input" class="form-control" type="text" placeholder="Joinable Room ID">
+            <div class="input-group-append">
+                <button id="share-id-btn" class="btn btn-primary">Share</button>
+            </div>
         </div>
-    </section>
+    </form>
 
-    <!-- User info -->
-    <section class="navbar-section">
-        <figure id="user-avatar" class="avatar" data-initial="UN"></figure>
-    </section>
-</header>
+    <!-- User Info -->
+    <!-- TODO: Re-implement logic -->
+    <div class="navbar-content">
+        <div id="user-avatar">UN</div>
+    </div>
+</nav>
 {{end}}
 
 {{ define "main-content" }}
