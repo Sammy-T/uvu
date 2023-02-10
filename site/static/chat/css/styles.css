@@ -10,12 +10,17 @@
     gap: 2rem;
 }
 
+#stream-area, #chat-area, #help-area details {
+    width: 100%;
+    max-width: 720px;
+}
+
 #comm-area {
     min-height: 50vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: stretch;
+    align-items: center;
 }
 
 #stream-area {
@@ -31,6 +36,7 @@
 .video-container-single video {
     width: 100%;
     height: auto;
+    max-height: 85vh;
 }
 
 .stream-user {
@@ -45,7 +51,6 @@
     align-items: end;
     gap: 0.5rem;
     flex-grow: 1;
-    max-width: 720px;
     padding: 1rem;
 }
 
@@ -81,14 +86,20 @@
 }
 
 #help-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#help-area details {
     padding: 1rem;
 }
 
-#help-area * {
+#help-area details * {
     margin: 0;
 }
 
-#help-area p {
+#help-area details p {
     margin-bottom: 1rem;
 }
 
