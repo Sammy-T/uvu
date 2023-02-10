@@ -58,6 +58,34 @@ header h1 {
     background-color: #55ddffff;
 }
 
+.features {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+}
+
+.feature {
+    outline: 2px solid white;
+    width: 70%;
+    min-width: 200px;
+    border-radius: 2rem;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.feature img {
+    max-width: 50%;
+    max-height: 50%;
+}
+
+.feature p {
+    font-size: 2rem;
+    text-align: center;
+}
+
 @media (min-width: 790px) {
     header {
         flex-direction: row;
