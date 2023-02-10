@@ -80,6 +80,18 @@
     gap: 1rem;
 }
 
+#help-area {
+    padding: 1rem;
+}
+
+#help-area * {
+    margin: 0;
+}
+
+#help-area p {
+    margin-bottom: 1rem;
+}
+
 /* @media (min-width: 720px) {
     #comm-area {
         flex-direction: row;
