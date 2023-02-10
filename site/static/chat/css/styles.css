@@ -116,6 +116,7 @@
 .modal section {
     display: flex;
     flex-direction: column;
+    gap: 0.5rem;
 }
 
 @media (min-width: 720px) {
