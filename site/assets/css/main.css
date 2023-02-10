@@ -6,6 +6,7 @@
     --navbar-brand-image-height: 4rem;
     --dm-base-text-color: white;
     --header-graphic-img-margin: 2rem;
+    --feature-img-size: 40%;
 }
 
 header {
@@ -66,24 +67,28 @@ header h1 {
 }
 
 .feature {
-    outline: 2px solid white;
+    border: 2px solid white;
     width: 70%;
     min-width: 200px;
     border-radius: 2rem;
-    padding: 2rem;
+    padding: 4rem 2rem;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
+    gap: 1.5rem;
 }
 
 .feature img {
-    max-width: 50%;
-    max-height: 50%;
+    max-width: var(--feature-img-size);
+    max-height: var(--feature-img-size);
+    height: auto;
 }
 
 .feature p {
     font-size: 2rem;
     text-align: center;
+    margin: 0;
 }
 
 @media (min-width: 790px) {
@@ -94,5 +99,16 @@ header h1 {
 
     header>section {
         width: 50vw;
+    }
+
+    .features {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: stretch;
+    }
+
+    .feature {
+        width: 20vw;
+        padding: 1rem 0;
     }
 }
