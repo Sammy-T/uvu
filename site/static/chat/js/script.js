@@ -981,25 +981,8 @@ function adjustCommAreaUi() {
     // Show/Hide the stream area
     if(audioEnabledCheck.checked || videoEnabledCheck.checked || screenShareEnabledCheck.checked || streamArea.hasChildNodes()) {
         streamArea.style.display = 'flex';
-        chatArea.classList.remove('col-12');
-        chatArea.classList.add('col-3');
     }else{
         streamArea.style.display = 'none';
-        chatArea.classList.remove('col-3');
-        chatArea.classList.add('col-12');
-    }
-
-    const videoContainers = document.querySelectorAll('#stream-area [class^="video-container"]');
-    
-    // Style the video elements to scale along with their amount
-    if(videoContainers.length > 1) {
-        videoContainers.forEach(container => {
-            container.classList.remove('video-container-single');
-            container.classList.add('video-container');
-        });
-    }else if(videoContainers.length === 1) {
-        videoContainers[0].classList.remove('video-container');
-        videoContainers[0].classList.add('video-container-single');
     }
 }
 
