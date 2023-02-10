@@ -110,6 +110,11 @@ footer {
     gap: 3rem;
 }
 
+.single {
+    min-height: 70vh;
+    padding: 3rem 0;
+}
+
 @media (min-width: 790px) {
     header {
         flex-direction: row;
