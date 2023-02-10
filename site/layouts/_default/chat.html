@@ -38,14 +38,14 @@
             </div>
             <input id="room-id-input" class="form-control" type="text" placeholder="Joinable Room ID">
             <div class="input-group-append">
-                <button id="share-id-btn" class="btn btn-primary">Share</button>
+                <a id="share-id-btn" class="btn btn-primary" href="#share-modal">Share</a>
             </div>
         </div>
     </form>
 
     <!-- User Info -->
     <div class="navbar-content">
-        <button id="user-avatar" class="btn btn-square btn-primary rounded-circle">UN</button>
+        <a id="user-avatar" class="btn btn-square btn-primary rounded-circle" href="#username-modal">UN</a>
     </div>
 </nav>
 {{ end }}
@@ -83,6 +83,7 @@
             <section>
                 <input class="form-control" type="text" id="username" placeholder="username" 
                     autocomplete="off">
+                <p class="form-input-hint"></p>
                 <button id="create-username" class="btn btn-primary" disabled>Create</button>
             </section>
         </div>
@@ -146,7 +147,7 @@
             <label for="screen-share-enabled">Screen Share</label>
         </div>
 
-        <button id="more-options" class="btn">Options</button>
+        <a id="more-options" class="btn" href="#input-device-modal">Options</a>
     </form>
 </div>
 

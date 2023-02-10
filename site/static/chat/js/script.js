@@ -65,8 +65,6 @@ const msgTemplate = document.querySelector('#template-msg');
 const msgSelfTemplate = document.querySelector('#template-msg-self');
 const msgInfoTemplate = document.querySelector('#template-msg-info');
 
-const toast = document.querySelector('.toast');
-
 const usernameModal = document.querySelector('#username-modal');
 const shareModal = document.querySelector('#share-modal');
 const inputDeviceModal = document.querySelector('#input-device-modal')
@@ -987,12 +985,6 @@ function adjustCommAreaUi() {
 }
 
 function initUsernameModal() {
-    // Show Create Username modal when avatar is clicked
-    userAvatar.addEventListener('click', event => {
-        usernameModal.classList.add('active');
-        usernameField.focus(); // Request input focus
-    });
-
     const usernameHint = document.querySelector('#username-modal .form-input-hint');
     const createUsernameBtn = document.querySelector('#create-username');
 
@@ -1006,7 +998,7 @@ function initUsernameModal() {
 
         userAvatar.dataset.initial = username.substr(0,2).toUpperCase(); // Set the avatar initials
 
-        usernameModal.classList.remove('active');
+        location.hash = '';
         
         // If the modal was triggered by another action,
         // continue with that action
@@ -1028,14 +1020,10 @@ function initUsernameModal() {
         const isValidUsername = usernameExp.test(this.value);
 
         // Remove previous validation state
-        this.classList.remove('is-success', 'is-error');
         usernameHint.innerText = '';
 
         // Display input validation if the length requirement has been met
         if(isValidLength) {
-            const validationClass = isValidUsername ? 'is-success' : 'is-error';
-            this.classList.add(validationClass);
-
             usernameHint.innerText = !isValidUsername ? validationMsg : '';
         }
 
@@ -1052,19 +1040,20 @@ function initUsernameModal() {
 function initShareModal() {
     // Show Share modal when share button is clicked
     document.querySelector('#share-id-btn').addEventListener('click', event => {
+        let shareRoomId = `Room ID: ${roomIdInput.value}`;
+
         if(!roomIdInput.value) {
             showToast('warning', 'No room id to share');
-            return;
+            shareRoomId = 'Room ID'
         }
 
-        document.querySelector('#share-room-id').innerText = `Room ID: ${roomIdInput.value}`;
-        shareModal.classList.add('active');
+        document.querySelector('#share-room-id').innerText = shareRoomId;
     });
 
     function copyToClipboard() {
         // Copy the value in the room id input field
         roomIdInput.select();
-        document.execCommand('copy');
+        document.execCommand('copy'); //// TODO:
 
         window.getSelection().empty(); // Clear the selection
 
@@ -1073,7 +1062,7 @@ function initShareModal() {
 
     document.querySelector('#share-gmail').addEventListener('click', event => {
         const roomId = roomIdInput.value;
-        const shareLink = `${window.location.href}?room=${roomId}`;
+        const shareLink = `${location.origin}${location.pathname}?room=${roomId}`;
 
         const subject = `Join me on Pearmo`;
         const body = `Join my Pearmo chat room at\n${shareLink}`;
@@ -1081,12 +1070,12 @@ function initShareModal() {
         const gmailLink = `https://mail.google.com/mail/?view=cm&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         window.open(gmailLink);
 
-        shareModal.classList.remove('active');
+        location.hash = '';
     });
 
     document.querySelector('#share-default').addEventListener('click', event => {
         const roomId = roomIdInput.value;
-        const shareLink = `${window.location.href}?room=${roomId}`;
+        const shareLink = `${location.origin}${location.pathname}?room=${roomId}`;
 
         const subject = `Join me on Pearmo`;
         const body = `Join my Pearmo chat room at\n${shareLink}`;
@@ -1094,23 +1083,23 @@ function initShareModal() {
         const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         window.open(mailtoLink);
 
-        shareModal.classList.remove('active');
+        location.hash = '';
     });
 
     document.querySelector('#share-copy-link').addEventListener('click', event => {
         const roomId = roomIdInput.value;
-        const shareLink = `${window.location.href}?room=${roomId}`;
+        const shareLink = `${location.origin}${location.pathname}?room=${roomId}`;
 
         roomIdInput.value = shareLink; // Set the room id field to the share link
         copyToClipboard(); // Copy the share link
         roomIdInput.value = roomId; // Reset the room id field back to the room id
 
-        shareModal.classList.remove('active');
+        location.hash = '';
     });
 
     document.querySelector('#share-copy').addEventListener('click', event => {
         copyToClipboard(); // Copy the room id
-        shareModal.classList.remove('active');
+        location.hash = '';
     });
 }
 
@@ -1118,9 +1107,7 @@ function initInputDeviceModal() {
     const videoSelect = document.querySelector('#video-device');
     const audioSelect = document.querySelector('#audio-device');
 
-    async function showInputDeviceModal() {
-        inputDeviceModal.classList.add('active');
-
+    async function onInputDeviceModal() {
         // Query the available devices
         const devices = await navigator.mediaDevices.enumerateDevices();
         console.log('Available devices', devices);
@@ -1163,12 +1150,7 @@ function initInputDeviceModal() {
         audioInputDevices.forEach(device => addDeviceOption(audioSelect, device));
     }
 
-    // Show the Input Device modal when the more options button is clicked 
-    document.querySelector('#more-options').addEventListener('click', event => {
-        event.preventDefault(); // Prevent the button from automatically trying to submit the Stream Options form
-
-        showInputDeviceModal();
-    });
+    document.querySelector('#more-options').addEventListener('click', onInputDeviceModal);
 
     // Set desired constraints based on selected device options
     videoSelect.addEventListener('change', function(event) {
@@ -1276,20 +1258,6 @@ function init() {
     const searchParams = new URLSearchParams(location.search);
     if(searchParams.has('room')) roomIdInput.value = searchParams.get('room');
 
-    // Hide all modals when a close element is clicked 
-    document.querySelectorAll('.close-modal').forEach(closeElement => {
-        closeElement.addEventListener('click', event => {
-            event.preventDefault();
-
-            // Dispatch a Pending Constraint event if the Input Device modal closed with options changed
-            if(pendingConstraintChanges) inputDeviceModal.dispatchEvent(pendingConstraintsEvent);
-
-            modalAction = null;
-
-            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('active'));
-        });
-    });
-
     initUsernameModal();
     initShareModal();
     initInputDeviceModal();
@@ -1299,8 +1267,6 @@ function init() {
     createRoomBtn.addEventListener('click', event => {
         if(!username) {
             modalAction = 'createRoom';
-            usernameModal.classList.add('active');
-            usernameField.focus(); // Request input focus
         }else{
             createRoom();
         }
@@ -1309,8 +1275,6 @@ function init() {
     joinRoomBtn.addEventListener('click', event => {
         if(!username) {
             modalAction = 'joinRoom';
-            usernameModal.classList.add('active');
-            usernameField.focus(); // Request input focus
         }else{
             joinRoom();
         }
