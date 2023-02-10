@@ -28,12 +28,12 @@
     flex-direction: column;
 }
 
-.video-container-single {
+[class^='video-container'] {
     flex-grow: 1;
     position: relative;
 }
 
-.video-container-single video {
+[class^='video-container'] video {
     width: 100%;
     height: auto;
     max-height: 85vh;
@@ -43,6 +43,9 @@
     position: absolute;
     z-index: 1;
     padding: 1rem;
+    background-color: var(--primary-color);
+    border-radius: 2rem;
+    margin: 0.5rem;
 }
 
 #chat-area {
@@ -134,6 +137,7 @@
     }
 
     #stream-area {
+        max-width: 75vw;
         display: none;
         padding: 1rem 0;
         flex-grow: 2;
@@ -143,6 +147,10 @@
 
     .video-container-single {
         min-width: 50%;
+    }
+
+    .video-container {
+        max-width: 50%;
     }
 
     #chat-area {
