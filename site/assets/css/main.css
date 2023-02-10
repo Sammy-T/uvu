@@ -10,11 +10,10 @@
 
 header {
     display: flex;
-    min-height: 90vh;
+    flex-direction: column;
 }
 
 header>section {
-    width: 50vw;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -38,6 +37,7 @@ header h1 {
 
 #header-graphic img {
     width: 50%;
+    height: auto;
     margin-top: var(--header-graphic-img-margin);
     border-radius: 2rem;
 }
@@ -56,4 +56,15 @@ header h1 {
     height: 100%;
     width: 90%;
     background-color: #55ddffff;
+}
+
+@media (min-width: 790px) {
+    header {
+        flex-direction: row;
+        min-height: 90vh;
+    }
+
+    header>section {
+        width: 50vw;
+    }
 }
