@@ -28,12 +28,10 @@
         {{ $style := resources.Get "css/main.css" | resources.PostCSS }}
         <link rel="stylesheet" href="{{ $style.RelPermalink }}">
 
-        {{/* // Remove js processing
         <!-- Process JavaScript files with ESBuild -->
         <!-- More details: https://gohugo.io/hugo-pipes/js/ -->
         {{ $built := resources.Get "js/index.js" | js.Build "main.js" }}
         <script src="{{ $built.RelPermalink }}" defer></script>
-        */}}
 
         {{ block "page-head" . }}{{ end }}
 
@@ -67,6 +65,8 @@
                 </ul>
             </nav>
             {{- end }}
+
+            <div class="sticky-alerts"></div>
 
             <div class="content-wrapper">
                 {{ block "header" . }}{{ partial "header" . }}{{ end }}

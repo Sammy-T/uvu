@@ -114,7 +114,7 @@ async function joinRoom() {
     if(!roomIdInput.value) {
         const warning = 'No room id to join';
         console.warn(warning);
-        popToast('warning', warning);
+        showToast('warning', warning);
         return;
     }
 
@@ -126,7 +126,7 @@ async function joinRoom() {
     if(!doc.exists) {
         const warning = 'Room not found';
         console.warn(warning);
-        popToast('warning', warning);
+        showToast('warning', warning);
         return;
     }
 
@@ -141,7 +141,7 @@ async function joinRoom() {
     if(roomData.participants.length >= 4) {
         const warning = 'Room limit reached. Unable to join.';
         console.warn(warning);
-        popToast('warning', warning);
+        showToast('warning', warning);
 
         hangUp();
         return;
@@ -952,36 +952,29 @@ async function cleanUpDb() {
     }
 }
 
-function popToast(type, message) {
-    showToast(type, message);
-    setTimeout(hideToast, 2000);
-}
-
-function showToast(type, message) {
-    toast.innerText = message;
-
-    let classes = ['toast-active'];
+function showToast(type = '', message) {
+    const toastOpts = {
+        content: message
+    };
 
     switch(type) {
         case 'success':
-            classes.push('toast-success');
+            toastOpts.alertType = "alert-success";
             break;
 
         case 'warning':
-            classes.push('toast-warning');
+            toastOpts.alertType = "alert-secondary";
             break;
 
         case 'error':
-            classes.push('toast-error');
+            toastOpts.alertType = "alert-danger";
             break;
+        
+        default:
+            toastOpts.alertType = "alert-primary";
     }
 
-    toast.classList.add(...classes);
-}
-
-function hideToast() {
-    const classes = ['toast-active', 'toast-primary', 'toast-success', 'toast-warning', 'toast-error'];
-    toast.classList.remove(...classes);
+    halfmoon.initStickyAlert(toastOpts);
 }
 
 function adjustCommAreaUi() {
@@ -1077,7 +1070,7 @@ function initShareModal() {
     // Show Share modal when share button is clicked
     document.querySelector('#share-id-btn').addEventListener('click', event => {
         if(!roomIdInput.value) {
-            popToast('warning', 'No room id to share');
+            showToast('warning', 'No room id to share');
             return;
         }
 
@@ -1092,7 +1085,7 @@ function initShareModal() {
 
         window.getSelection().empty(); // Clear the selection
 
-        popToast(null, 'Copied to clipboard');
+        showToast(null, 'Copied to clipboard');
     }
 
     document.querySelector('#share-gmail').addEventListener('click', event => {
