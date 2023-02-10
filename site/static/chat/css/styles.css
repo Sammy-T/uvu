@@ -59,7 +59,7 @@
     height: 50vh;
     flex-grow: 1;
     background-color: #4a5056;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 .message {
