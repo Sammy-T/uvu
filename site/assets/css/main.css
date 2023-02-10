@@ -3,6 +3,7 @@
 
 /* Additional styling */
 :root {
+    --theme-color: #55ddffff;
     --navbar-brand-image-height: 4rem;
     --dm-base-text-color: white;
     --header-graphic-img-margin: 2rem;
@@ -56,7 +57,7 @@ header h1 {
     align-self: flex-end;
     height: 100%;
     width: 90%;
-    background-color: #55ddffff;
+    background-color: var(--theme-color);
 }
 
 .features {
@@ -91,6 +92,12 @@ header h1 {
     margin: 0;
 }
 
+.display {
+    color: var(--theme-color);
+    padding: 6rem 3rem;
+    text-align: center;
+}
+
 @media (min-width: 790px) {
     header {
         flex-direction: row;
@@ -105,6 +112,7 @@ header h1 {
         flex-direction: row;
         justify-content: space-between;
         align-items: stretch;
+        margin-bottom: 3rem;
     }
 
     .feature {
