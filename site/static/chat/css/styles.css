@@ -112,6 +112,7 @@
 @media (min-width: 720px) {
     #comm-area {
         flex-direction: row;
+        justify-content: center;
         align-items: stretch;
     }
 
@@ -119,8 +120,14 @@
         max-width: unset;
     }
 
+    #stream-area, #chat-area {
+        width: unset;
+    }
+
     #stream-area {
+        display: none;
         padding: 1rem 0;
+        flex-grow: 2;
         flex-direction: row;
         flex-wrap: wrap;
     }
@@ -130,6 +137,7 @@
     }
 
     #chat-area {
-        max-width: 30vw;
+        max-width: 50vw;
+        flex-grow: 1;
     }
 }

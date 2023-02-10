@@ -82,17 +82,7 @@
 <!-- Communication Area -->
 <section id="comm-area">
     <!-- Stream(s) -->
-    <div id="stream-area">
-        {{/*  TODO: TEMP  */}}
-        <div class="video-container-single">
-            <div class="stream-user">Username</div>
-            <video autoplay playsinline controls></video>
-        </div>
-        <div class="video-container-single">
-            <div class="stream-user">Username</div>
-            <video autoplay playsinline controls></video>
-        </div>
-    </div>
+    <div id="stream-area"></div>
 
     <!-- Video template -->
     <template id="template-video">
@@ -104,24 +94,7 @@
 
     <!-- Chat -->
     <div id="chat-area">
-        <div id="messages-container">
-            {{/*  TODO: TEMP  */}}
-            <div class="message msg-info">
-                <p class="msg-content text-muted">Message content</p>
-            </div>
-            <div class="message">
-                <p class="msg-username text-primary">Username</p>
-                <p class="msg-content">Message content</p>
-            </div>
-            <div class="message msg-self">
-                <p class="msg-username text-primary">Username</p>
-                <p class="msg-content">Message content</p>
-            </div>
-            <div class="message">
-                <p class="msg-username text-primary">Username</p>
-                <p class="msg-content">Message content</p>
-            </div>
-        </div>
+        <div id="messages-container"></div>
         <textarea id="message-input" class="form-control" name="message" placeholder="Message"></textarea>
     </div>
 
