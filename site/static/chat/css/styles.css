@@ -10,7 +10,7 @@
     gap: 2rem;
 }
 
-#stream-area, #chat-area, #send-area, #send-section .placeholder, #help-area details {
+#stream-area, #chat-area, #help-area details {
     width: 100%;
     max-width: 720px;
 }
@@ -88,7 +88,6 @@
     justify-content: flex-end;
     align-items: center;
     gap: 1rem;
-    padding-right: 1rem;
 }
 
 #help-area {
@@ -126,7 +125,7 @@
         align-items: stretch;
     }
 
-    #stream-area, #chat-area, #send-area, #send-section .placeholder, #help-area details {
+    #stream-area, #chat-area, #help-area details {
         max-width: unset;
     }
 
@@ -146,12 +145,8 @@
         min-width: 50%;
     }
 
-    #chat-area, #send-area {
+    #chat-area {
         max-width: 50vw;
         flex-grow: 1;
-    }
-
-    #send-section .placeholder {
-        display: none;
     }
 }
