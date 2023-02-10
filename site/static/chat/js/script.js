@@ -1009,7 +1009,7 @@ function initUsernameModal() {
     function createUsername() {
         username = document.querySelector('#username').value;
 
-        userAvatar.dataset.initial = username.substr(0,2).toUpperCase(); // Set the avatar initials
+        userAvatar.innerText = username.substr(0,2).toUpperCase(); // Set the avatar initials
 
         location.hash = '';
         
