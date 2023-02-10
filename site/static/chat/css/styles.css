@@ -115,7 +115,21 @@
         align-items: stretch;
     }
 
+    #stream-area, #chat-area, #send-area, #send-section .placeholder, #help-area details {
+        max-width: unset;
+    }
+
     #stream-area {
         padding: 1rem 0;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .video-container-single {
+        min-width: 50%;
+    }
+
+    #chat-area {
+        max-width: 30vw;
     }
 }
