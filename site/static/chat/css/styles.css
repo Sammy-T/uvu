@@ -146,8 +146,12 @@
         min-width: 50%;
     }
 
-    #chat-area {
+    #chat-area, #send-area {
         max-width: 50vw;
         flex-grow: 1;
+    }
+
+    #send-section .placeholder {
+        display: none;
     }
 }
