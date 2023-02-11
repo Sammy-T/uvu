@@ -1,36 +1,45 @@
 {{ define "header" }}
-<header class="hero bg-primary">
-    <section class="hero-body">
-        <img class="lead-logo p-centered" src="{{ `/img/pearmo-logo.png` | relURL }}" alt="Pearmo logo">
+<header>
+    <!-- Introduction -->
+    <section>
+        <h1>Pearrd is a peer-to-peer chat and conferencing platform with temporary rooms</h1>
+        <a href="/chat" class="btn btn-lg btn-primary">Start Chatting</a>
+    </section>
 
-        <h4 class="text-center">
-            Pearmo is a peer-to-peer chat and conferencing platform with temporary rooms.
-            <br/>
-            <br/>
-            <a href="{{ `/chat` | relURL }}" class="btn lead-link">Start Chatting</a>
-        </h4>
+    <!-- Graphic -->
+    <section id="header-graphic">
+        <div id="graphic-bg"></div>
+        <img src="/img/pexels-ekaterina-bolovtsova-4049794.jpg" alt="smiling woman at computer"
+            width="380" height="250">
+        <img src="/img/pexels-matilda-wormwood-4099096.jpg" alt="smiling woman at computer with drink"
+            width="500" height="300">
     </section>
 </header>
 {{ end }}
 
 {{ define "main-content" }}
-<h3>Features</h3>
-<section class="features">
-    <article>
-        <img src="{{ `/img/video-outline.svg` | relURL }}" alt="Video conferencing icon">
-        <h6>Video & Audio Conferencing</h6>
-    </article>
+<article class="container">
+    <h2>Features</h2>
 
-    <article>
-        <img src="{{ `/img/monitor-share.svg` | relURL }}" alt="Screen sharing icon">
-        <h6>Screen Sharing</h6>
-    </article>
+    <section class="features">
+        <div class="feature">
+            <img src="/img/icons/video-ic.svg" alt="video icon" width="150" height="150">
+            <p>Video &amp; Audio Conferencing</p>
+        </div>
+    
+        <div class="feature">
+            <img src="/img/icons/screen-ic.svg" alt="screen icon" width="150" height="150">
+            <p>Screen Sharing</p>
+        </div>
 
-    <article>
-        <img src="{{ `/img/forum-outline.svg` | relURL }}" alt="text chat icon">
-        <h6>Text chat</h6>
-    </article>
-</section>
+        <div class="feature">
+            <img src="/img/icons/chat-ic.svg" alt="chat icon" width="150" height="150">
+            <p>Text Chat</p>
+        </div>
+    </section>
+</article>
 
-<h5 class="text-primary text-center">Pearmo rooms are single serving sessions with no sign up necessary.</h5>
+<article class="container display">
+    <h3>Pearrd rooms are single serving sessions with no sign up necessary</h3>
+</article>
 {{ end }}

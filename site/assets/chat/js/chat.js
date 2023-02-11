@@ -1,3 +1,6 @@
+const halfmoon = require('halfmoon');
+import { scrollIntoView } from 'scroll-js';
+
 const configuration = {
     iceServers: [
         {urls: 'stun:stun.l.google.com:19302'}
@@ -65,8 +68,6 @@ const msgTemplate = document.querySelector('#template-msg');
 const msgSelfTemplate = document.querySelector('#template-msg-self');
 const msgInfoTemplate = document.querySelector('#template-msg-info');
 
-const toast = document.querySelector('.toast');
-
 const usernameModal = document.querySelector('#username-modal');
 const shareModal = document.querySelector('#share-modal');
 const inputDeviceModal = document.querySelector('#input-device-modal')
@@ -114,7 +115,7 @@ async function joinRoom() {
     if(!roomIdInput.value) {
         const warning = 'No room id to join';
         console.warn(warning);
-        popToast('warning', warning);
+        showToast('warning', warning);
         return;
     }
 
@@ -126,7 +127,7 @@ async function joinRoom() {
     if(!doc.exists) {
         const warning = 'Room not found';
         console.warn(warning);
-        popToast('warning', warning);
+        showToast('warning', warning);
         return;
     }
 
@@ -141,7 +142,7 @@ async function joinRoom() {
     if(roomData.participants.length >= 4) {
         const warning = 'Room limit reached. Unable to join.';
         console.warn(warning);
-        popToast('warning', warning);
+        showToast('warning', warning);
 
         hangUp();
         return;
@@ -465,7 +466,7 @@ function registerDataChannelListeners(participant, dataChannel) {
         msgEl.querySelector('.msg-content').innerText = disconnectMsg;
 
         msgContainer.appendChild(msgEl);
-        msgEl.scrollIntoView();
+        scrollIntoView(msgEl, msgContainer, { behavior: 'smooth' });
 
         delete participantNames[participant]; // Remove the participant's username
     }
@@ -558,7 +559,7 @@ function registerDataChannelListeners(participant, dataChannel) {
         if(message.type === 'message') msgEl.querySelector('.msg-username').innerText = message.username;
 
         msgContainer.appendChild(msgEl);
-        msgEl.scrollIntoView();
+        scrollIntoView(msgEl, msgContainer, { behavior: 'smooth' });
     });
 
     dataChannel.addEventListener('error', event => {
@@ -586,7 +587,7 @@ function sendMsg() {
     msgEl.querySelector('.msg-content').innerText = msgInput.value;
 
     msgContainer.appendChild(msgEl);
-    msgEl.scrollIntoView();
+    scrollIntoView(msgEl, msgContainer, { behavior: 'smooth' });
 
     msgInput.value = ''; // Clear the message input field
 }
@@ -952,48 +953,37 @@ async function cleanUpDb() {
     }
 }
 
-function popToast(type, message) {
-    showToast(type, message);
-    setTimeout(hideToast, 2000);
-}
-
-function showToast(type, message) {
-    toast.innerText = message;
-
-    let classes = ['toast-active'];
+function showToast(type = '', message) {
+    const toastOpts = {
+        content: message
+    };
 
     switch(type) {
         case 'success':
-            classes.push('toast-success');
+            toastOpts.alertType = "alert-success";
             break;
 
         case 'warning':
-            classes.push('toast-warning');
+            toastOpts.alertType = "alert-secondary";
             break;
 
         case 'error':
-            classes.push('toast-error');
+            toastOpts.alertType = "alert-danger";
             break;
+        
+        default:
+            toastOpts.alertType = "alert-primary";
     }
 
-    toast.classList.add(...classes);
-}
-
-function hideToast() {
-    const classes = ['toast-active', 'toast-primary', 'toast-success', 'toast-warning', 'toast-error'];
-    toast.classList.remove(...classes);
+    halfmoon.initStickyAlert(toastOpts);
 }
 
 function adjustCommAreaUi() {
     // Show/Hide the stream area
     if(audioEnabledCheck.checked || videoEnabledCheck.checked || screenShareEnabledCheck.checked || streamArea.hasChildNodes()) {
         streamArea.style.display = 'flex';
-        chatArea.classList.remove('col-12');
-        chatArea.classList.add('col-3');
     }else{
         streamArea.style.display = 'none';
-        chatArea.classList.remove('col-3');
-        chatArea.classList.add('col-12');
     }
 
     const videoContainers = document.querySelectorAll('#stream-area [class^="video-container"]');
@@ -1011,12 +1001,6 @@ function adjustCommAreaUi() {
 }
 
 function initUsernameModal() {
-    // Show Create Username modal when avatar is clicked
-    userAvatar.addEventListener('click', event => {
-        usernameModal.classList.add('active');
-        usernameField.focus(); // Request input focus
-    });
-
     const usernameHint = document.querySelector('#username-modal .form-input-hint');
     const createUsernameBtn = document.querySelector('#create-username');
 
@@ -1028,9 +1012,9 @@ function initUsernameModal() {
     function createUsername() {
         username = document.querySelector('#username').value;
 
-        userAvatar.dataset.initial = username.substr(0,2).toUpperCase(); // Set the avatar initials
+        userAvatar.innerText = username.substr(0,2).toUpperCase(); // Set the avatar initials
 
-        usernameModal.classList.remove('active');
+        location.hash = '';
         
         // If the modal was triggered by another action,
         // continue with that action
@@ -1052,14 +1036,10 @@ function initUsernameModal() {
         const isValidUsername = usernameExp.test(this.value);
 
         // Remove previous validation state
-        this.classList.remove('is-success', 'is-error');
         usernameHint.innerText = '';
 
         // Display input validation if the length requirement has been met
         if(isValidLength) {
-            const validationClass = isValidUsername ? 'is-success' : 'is-error';
-            this.classList.add(validationClass);
-
             usernameHint.innerText = !isValidUsername ? validationMsg : '';
         }
 
@@ -1076,28 +1056,29 @@ function initUsernameModal() {
 function initShareModal() {
     // Show Share modal when share button is clicked
     document.querySelector('#share-id-btn').addEventListener('click', event => {
+        let shareRoomId = `Room ID: ${roomIdInput.value}`;
+
         if(!roomIdInput.value) {
-            popToast('warning', 'No room id to share');
-            return;
+            showToast('warning', 'No room id to share');
+            shareRoomId = 'Room ID'
         }
 
-        document.querySelector('#share-room-id').innerText = `Room ID: ${roomIdInput.value}`;
-        shareModal.classList.add('active');
+        document.querySelector('#share-room-id').innerText = shareRoomId;
     });
 
     function copyToClipboard() {
         // Copy the value in the room id input field
         roomIdInput.select();
-        document.execCommand('copy');
+        document.execCommand('copy'); //// TODO:
 
         window.getSelection().empty(); // Clear the selection
 
-        popToast(null, 'Copied to clipboard');
+        showToast(null, 'Copied to clipboard');
     }
 
     document.querySelector('#share-gmail').addEventListener('click', event => {
         const roomId = roomIdInput.value;
-        const shareLink = `${window.location.href}?room=${roomId}`;
+        const shareLink = `${location.origin}${location.pathname}?room=${roomId}`;
 
         const subject = `Join me on Pearmo`;
         const body = `Join my Pearmo chat room at\n${shareLink}`;
@@ -1105,12 +1086,12 @@ function initShareModal() {
         const gmailLink = `https://mail.google.com/mail/?view=cm&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         window.open(gmailLink);
 
-        shareModal.classList.remove('active');
+        location.hash = '';
     });
 
     document.querySelector('#share-default').addEventListener('click', event => {
         const roomId = roomIdInput.value;
-        const shareLink = `${window.location.href}?room=${roomId}`;
+        const shareLink = `${location.origin}${location.pathname}?room=${roomId}`;
 
         const subject = `Join me on Pearmo`;
         const body = `Join my Pearmo chat room at\n${shareLink}`;
@@ -1118,23 +1099,23 @@ function initShareModal() {
         const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         window.open(mailtoLink);
 
-        shareModal.classList.remove('active');
+        location.hash = '';
     });
 
     document.querySelector('#share-copy-link').addEventListener('click', event => {
         const roomId = roomIdInput.value;
-        const shareLink = `${window.location.href}?room=${roomId}`;
+        const shareLink = `${location.origin}${location.pathname}?room=${roomId}`;
 
         roomIdInput.value = shareLink; // Set the room id field to the share link
         copyToClipboard(); // Copy the share link
         roomIdInput.value = roomId; // Reset the room id field back to the room id
 
-        shareModal.classList.remove('active');
+        location.hash = '';
     });
 
     document.querySelector('#share-copy').addEventListener('click', event => {
         copyToClipboard(); // Copy the room id
-        shareModal.classList.remove('active');
+        location.hash = '';
     });
 }
 
@@ -1142,9 +1123,7 @@ function initInputDeviceModal() {
     const videoSelect = document.querySelector('#video-device');
     const audioSelect = document.querySelector('#audio-device');
 
-    async function showInputDeviceModal() {
-        inputDeviceModal.classList.add('active');
-
+    async function onInputDeviceModal() {
         // Query the available devices
         const devices = await navigator.mediaDevices.enumerateDevices();
         console.log('Available devices', devices);
@@ -1187,12 +1166,7 @@ function initInputDeviceModal() {
         audioInputDevices.forEach(device => addDeviceOption(audioSelect, device));
     }
 
-    // Show the Input Device modal when the more options button is clicked 
-    document.querySelector('#more-options').addEventListener('click', event => {
-        event.preventDefault(); // Prevent the button from automatically trying to submit the Stream Options form
-
-        showInputDeviceModal();
-    });
+    document.querySelector('#more-options').addEventListener('click', onInputDeviceModal);
 
     // Set desired constraints based on selected device options
     videoSelect.addEventListener('change', function(event) {
@@ -1300,20 +1274,6 @@ function init() {
     const searchParams = new URLSearchParams(location.search);
     if(searchParams.has('room')) roomIdInput.value = searchParams.get('room');
 
-    // Hide all modals when a close element is clicked 
-    document.querySelectorAll('.close-modal').forEach(closeElement => {
-        closeElement.addEventListener('click', event => {
-            event.preventDefault();
-
-            // Dispatch a Pending Constraint event if the Input Device modal closed with options changed
-            if(pendingConstraintChanges) inputDeviceModal.dispatchEvent(pendingConstraintsEvent);
-
-            modalAction = null;
-
-            document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('active'));
-        });
-    });
-
     initUsernameModal();
     initShareModal();
     initInputDeviceModal();
@@ -1323,8 +1283,7 @@ function init() {
     createRoomBtn.addEventListener('click', event => {
         if(!username) {
             modalAction = 'createRoom';
-            usernameModal.classList.add('active');
-            usernameField.focus(); // Request input focus
+            location.hash = 'username-modal';
         }else{
             createRoom();
         }
@@ -1333,8 +1292,7 @@ function init() {
     joinRoomBtn.addEventListener('click', event => {
         if(!username) {
             modalAction = 'joinRoom';
-            usernameModal.classList.add('active');
-            usernameField.focus(); // Request input focus
+            location.hash = 'username-modal';
         }else{
             joinRoom();
         }

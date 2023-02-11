@@ -1,7 +1,7 @@
 {
-  "name": "pearmo",
+  "name": "pearrd",
   "version": "1.0.0",
-  "description": "Pearmo is a peer-to-peer chat website.",
+  "description": "Pearrd is a peer-to-peer chat website.",
   "repository": "github:Sammy-T/Pearmo",
   "main": "index.js",
   "scripts": {
@@ -26,6 +26,7 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
-    "spectre.css": "^0.5.9"
+    "halfmoon": "^1.1.1",
+    "scroll-js": "^3.5.2"
   }
 }

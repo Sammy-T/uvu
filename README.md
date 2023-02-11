@@ -1,4 +1,4 @@
-# Pearmo
+# Pearrd
 This is a chat and conferencing website communicating via WebRTC and using Firebase for signaling. It's built using [Hugo-ing](https://github.com/Sammy-T/hugo-ing).
 
 This project is configured to be tested and deployed using Firebase.

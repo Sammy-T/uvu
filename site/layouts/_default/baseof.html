@@ -14,7 +14,7 @@
         
         {{- $description := "" -}}
         {{- if .IsHome -}}
-            {{- $description = "Pearmo is a chat and conferencing platform with no sign up." -}}
+            {{- $description = "Pearrd is a chat and conferencing platform with no sign up." -}}
         {{- else if (isset .Params "description") -}}
             {{- $description = .Param "description" -}}
         {{- end -}}
@@ -28,12 +28,10 @@
         {{ $style := resources.Get "css/main.css" | resources.PostCSS }}
         <link rel="stylesheet" href="{{ $style.RelPermalink }}">
 
-        {{/* // Remove js processing
         <!-- Process JavaScript files with ESBuild -->
         <!-- More details: https://gohugo.io/hugo-pipes/js/ -->
-        {{ $built := resources.Get "js/index.js" | js.Build "main.js" }}
+        {{ $built := resources.Get "js/index.js" | js.Build "js/main.js" }}
         <script src="{{ $built.RelPermalink }}" defer></script>
-        */}}
 
         {{ block "page-head" . }}{{ end }}
 
@@ -42,29 +40,43 @@
         {{- end }}
     </head>
 
-    <body>
-        {{- block "nav" . }}
-        <header class="navbar">
-            <section class="navbar-section">
-                <a href="{{ `/` | relURL }}" class="navbar-brand mr-2 main-brand">
-                <img src="{{ `/img/pearmo-logo-color.png` | relURL }}" alt="Pearmo logo">
-                <h5>Pearmo</h5>
+    <body class="dark-mode">
+        {{ block "modals" . }}{{ end }}
+
+        <div class="page-wrapper with-navbar">
+            {{- block "nav" . }}
+            <nav class="navbar">
+                <a href="{{ `` | relURL }}" class="navbar-brand">
+                    <img src="{{ `img/pearrd-logo.svg` | relURL }}" alt="Pearrd logo" width="50" height="50">
+                    Pearrd
                 </a>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a href="{{ `` | relURL }}" class="nav-link">Home</a>
+                    </li>
 
-                {{- $navpages := where .Site.Pages.ByWeight "Title" "!=" $.Site.Title }}
-                {{ range $navpages }}
-                <a href="{{ .RelPermalink }}" class="btn btn-link">{{ .Title }}</a>
+                    {{- $navpages := where .Site.Pages.ByWeight "Title" "!=" $.Site.Title }}
+                    {{ range $navpages }}
+                        <li class="nav-item">
+                            <a href="{{ .RelPermalink }}" class="nav-link">{{ .Title }}</a>
+                        </li>
+                    {{- end }}
+                </ul>
+            </nav>
+            {{- end }}
+
+            <div class="sticky-alerts"></div>
+
+            <div class="content-wrapper">
+                {{ block "header" . }}{{ partial "header" . }}{{ end }}
+
+                {{- block "main" . }}
+                    <main>{{- block "main-content" . }}{{ end -}}</main>
                 {{- end }}
-            </section>
-        </header>
-        {{- end }}
 
-        {{ block "header" . }}{{ partial "header" . }}{{ end }}
-
-        {{- block "main" . }}
-        <main class="container grid-lg">{{- block "main-content" . }}{{ end -}}</main>
-        {{- end }}
-
-        {{ block "footer" . }}{{ partial "footer" . }}{{ end }}
+                {{ block "footer" . }}{{ partial "footer" . }}{{ end }}
+            </div>
+        </div>
     </body>
 </html>

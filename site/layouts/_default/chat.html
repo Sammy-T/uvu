@@ -14,90 +14,164 @@
 <script src="{{ $firebaseInit }}" defer></script>
 
 <!-- WebRTC Adapter -->
-<script src="{{ `/chat/js/adapter.js` | relURL }}" defer></script>
+<script src="{{ `chat/js/adapter.js` | relURL }}" defer></script>
 
-<link rel="stylesheet" href="{{ `/chat/css/styles.css` | relURL }}">
+<link rel="stylesheet" href="{{ `chat/css/styles.css` | relURL }}">
 
 {{ $config := resources.Get $configPath -}}
 <script src="{{ $config.RelPermalink }}" defer></script>
-<script src="{{ `/chat/js/script.js` | relURL }}" defer></script>
+
+{{ $script := resources.Get "chat/js/chat.js" | js.Build "chat/js/chat.js" }}
+<script src="{{ $script.RelPermalink }}" defer></script>
 {{ end }}
 
 {{ define "nav" }}
-<header class="navbar">
-    <section class="navbar-section">
-        <a href="{{ `/` | relURL }}" class="navbar-brand mr-2 main-brand">
-          <img src="{{ `/img/pearmo-logo-color.png` | relURL }}" alt="Pearmo logo">
-          <h5>Pearmo</h5>
-        </a>
-    </section>
+<nav class="navbar chat-nav">
+    <a href="{{ `` | relURL }}" class="navbar-brand">
+        <img src="{{ `img/pearrd-logo.svg` | relURL }}" alt="Pearrd logo" width="50" height="50">
+        Pearrd
+    </a>
 
-    <!-- Room id -->
-    <section class="navbar-center">
-        <div class="input-group input-inline">
-            <span class="input-group-addon">Room ID:</span>
-            <input id="room-id-input" type="text" class="form-input" placeholder="Joinable room id">
-            <button id="share-id-btn" class="btn btn-primary input-group-btn">Share</button>
+    <!-- Room ID -->
+    <form class="form-inline">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Room ID</span>
+            </div>
+            <input id="room-id-input" class="form-control" type="text" placeholder="Joinable Room ID">
+            <div class="input-group-append">
+                <a id="share-id-btn" class="btn btn-primary" href="#share-modal">Share</a>
+            </div>
         </div>
-    </section>
+    </form>
 
-    <!-- User info -->
-    <section class="navbar-section">
-        <figure id="user-avatar" class="avatar" data-initial="UN"></figure>
-    </section>
-</header>
-{{end}}
+    <!-- User Info -->
+    <div class="navbar-content">
+        <a id="user-avatar" class="btn btn-square btn-primary rounded-circle" href="#username-modal">UN</a>
+    </div>
+</nav>
+{{ end }}
+
+{{ define "modals" }}
+<!-- Share Modal -->
+<div id="share-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <a href="#" class="close" role="button" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </a>
+
+            <h5 id="share-room-id" class="modal-title">Room ID</h5>
+            <section>
+                <button id="share-gmail" class="btn btn-link">share with Gmail</button>
+                <button id="share-default" class="btn btn-link">share with default</button>
+                <button id="share-copy-link" class="btn btn-link">copy link</button>
+                <button id="share-copy" class="btn btn-link">copy</button>
+            </section>
+        </div>
+    </div>
+</div>
+
+<!-- Create Username Modal -->
+<div id="username-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <a href="#" class="close" role="button" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </a>
+
+            <h5 class="modal-title">Create a username</h5>
+            <p>Create a temporary username for this chat.</p>
+            <section>
+                <input class="form-control" type="text" id="username" placeholder="username" 
+                    autocomplete="off">
+                <p class="form-input-hint"></p>
+                <button id="create-username" class="btn btn-primary" disabled>Create</button>
+            </section>
+        </div>
+    </div>
+</div>
+
+<!-- Input Device Modal -->
+<div id="input-device-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <a href="#" class="close" role="button" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </a>
+
+            <h5 class="modal-title">Input Devices</h5>
+            <form id="input-device-options">
+                <div class="form-group">
+                    <label for="video-device">Video</label>
+                    <select id="video-device" class="form-control" name="video-device">
+                        <option>Auto</option>
+                        <option>Off</option>
+                        <option>Default</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="audio-device">Audio</label>
+                    <select id="audio-device" class="form-control" name="audio-device">
+                        <option>Auto</option>
+                        <option>Off</option>
+                        <option>Default</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{{ end }}
 
 {{ define "main-content" }}
-<!-- Room Actions -->
-<section id="room-actions">
-    <button id="create-room" class="btn btn-primary">Create Room</button>
-    <button id="join-room" class="btn btn-primary">Join Room</button>
-    <button id="hang-up" class="btn btn-primary" disabled>Hang up</button>
-</section>
+<div id="chat-opts" class="container">
+    <!-- Room Actions -->
+    <section id="room-actions">
+        <button id="create-room" class="btn btn-primary">Create Room</button>
+        <button id="join-room" class="btn btn-primary">Join Room</button>
+        <button id="hang-up" class="btn btn-primary" disabled>Hang up</button>
+    </section>
 
-<!-- Stream Options -->
-<form id="stream-options">
-    <div class="form-group clearfix">
-        <label class="form-switch form-inline">
+    <!-- Stream Options -->
+    <form id="stream-options" class="form-inline">
+        <div class="custom-switch">
             <input type="checkbox" id="audio-enabled" name="audio-enabled">
-            <i class="form-icon"></i>Audio
-        </label>
-        <label class="form-switch form-inline">
+            <label for="audio-enabled">Audio</label>
+        </div>
+        <div class="custom-switch">
             <input type="checkbox" id="video-enabled" name="video-enabled">
-            <i class="form-icon"></i>Video
-        </label>
-        <label class="form-switch form-inline">
+            <label for="video-enabled">Video</label>
+        </div>
+        <div class="custom-switch">
             <input type="checkbox" id="screen-share-enabled" name="screen-share-enabled">
-            <i class="form-icon"></i>Screen Share
-        </label>
+            <label for="screen-share-enabled">Screen Share</label>
+        </div>
 
-        <button id="more-options" class="btn btn-action float-right">
-            <i class="icon icon-more-vert"></i>
-        </button>
-    </div>
-</form>
+        <a id="more-options" class="btn" href="#input-device-modal">Options</a>
+    </form>
+</div>
 
 <!-- Communication Area -->
-<section id="comm-area" class="columns">
+<section id="comm-area">
     <!-- Stream(s) -->
-    <div id="stream-area" class="column col-9 col-md-12 bg-gray"></div>
+    <div id="stream-area"></div>
 
     <!-- Video template -->
     <template id="template-video">
         <div class="video-container-single">
-            <div class="chip stream-user">Username</div>
+            <div class="stream-user">Username</div>
             <video autoplay playsinline controls></video>
         </div>
     </template>
 
     <!-- Chat -->
-    <div id="chat-area" class="column col-12 col-md-12 bg-secondary">
+    <div id="chat-area">
         <div id="messages-container"></div>
-        <textarea id="message-input" class="form-input" name="message" placeholder="Message"></textarea>
+        <textarea id="message-input" class="form-control" name="message" placeholder="Message"></textarea>
         <div id="send-area">
-            <span></span>
-            <small class="text-primary">Shortcut: Control+Enter</small>
+            <small class="text-primary">Shortcut: Ctrl+Enter</small>
             <button id="send" class="btn btn-primary" disabled>Send</button>
         </div>
     </div>
@@ -123,92 +197,17 @@
 </section>
 
 <!-- Help Info -->
-<details>
-    <summary>Help</summary>
-    <h6>Sharing the room</h6>
-    <p>Click the Share button to email the room link or copy the room id.</p>
-
-    <h6>Room size limit</h6>
-    <p>Each room supports up to 4 participants. This may change in the future.</p>
-
-    <h6>Selecting Video &amp; Audio input</h6>
-    <p>Select the Video and Audio input devices by clicking the More (<i class="icon icon-more-vert"></i>) button.</p>
-</details>
-
-<div class="toast">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-</div>
-
-<!-- Share Modal -->
-<div id="share-modal" class="modal modal-sm">
-    <a href="#close" class="modal-overlay close-modal" aria-label="Close"></a>
-    <div class="modal-container">
-        <div class="modal-body">
-            <div class="content">
-                <p id="share-room-id">Room ID</p>
-                <button id="share-gmail" class="btn btn-link">share with Gmail</button>
-                <button id="share-default" class="btn btn-link">share with default</button>
-                <button id="share-copy-link" class="btn btn-link">copy link</button>
-                <button id="share-copy" class="btn btn-link">copy</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Create Username Modal -->
-<div id="username-modal" class="modal modal-sm">
-    <a href="#close" class="modal-overlay close-modal" aria-label="Close"></a>
-    <div class="modal-container">
-        <div class="modal-header">
-            <a href="#close" class="btn btn-clear float-right close-modal" aria-label="Close"></a>
-            <div class="modal-title h5">Create a username</div>
-        </div>
-
-        <div class="modal-body">
-            <div class="content">
-                <p>Create a temporary username for this chat.</p>
-                <input class="form-input" type="text" id="username" placeholder="username" autocomplete="off">
-                <p class="form-input-hint"></p>
-            </div>
-        </div>
-
-        <div class="modal-footer">
-            <button id="create-username" class="btn btn-primary" disabled>Create</button>
-            <a class="btn btn-link close-modal" href="#close" aria-label="Close">Close</a>
-        </div>
-    </div>
-</div>
-
-<!-- Input Device Modal -->
-<div id="input-device-modal" class="modal modal-sm">
-    <a href="#close" class="modal-overlay close-modal" aria-label="Close"></a>
-    <div class="modal-container">
-        <div class="modal-header">
-            <a href="#close" class="btn btn-clear float-right close-modal" aria-label="Close"></a>
-            <div class="modal-title h5">Input Devices</div>
-        </div>
+<section id="help-area">
+    <details>
+        <summary>Help</summary>
+        <h5>Sharing the room</h5>
+        <p>Click the Share button to email the room link or copy the room id.</p>
     
-        <div class="modal-body">
-            <div class="content">
-                <form id="input-device-options">
-                    <div class="form-group">
-                        <label for="video-device" class="form-label">Video</label>
-                        <select id="video-device" name="video-device" class="form-select">
-                            <option>Auto</option>
-                            <option>Off</option>
-                            <option>Default</option>
-                        </select>
-
-                        <label for="audio-device" class="form-label">Audio</label>
-                        <select id="audio-device" name="audio-device" class="form-select" style="margin-bottom: 1em;">
-                            <option>Auto</option>
-                            <option>Off</option>
-                            <option>Default</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+        <h5>Room size limit</h5>
+        <p>Each room supports up to 4 participants. This may change in the future.</p>
+    
+        <h5>Selecting Video &amp; Audio input</h5>
+        <p>Select the Video and Audio input devices by clicking the Options button.</p>
+    </details>
+</section>
 {{ end }}

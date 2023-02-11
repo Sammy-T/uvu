@@ -1,115 +1,186 @@
-#stream-options {
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
+.chat-nav {
+    justify-content: space-between;
 }
 
-#camera-label {
-    margin-left: 1rem;
+#chat-opts {
+    padding: 0 1rem;
 }
 
-#stream-area {
-    min-height: 100%;
-    display: none;
-    flex-wrap: wrap;
+#chat-opts>* {
+    padding: 1rem 0;
+}
+
+#chat-opts form {
+    gap: 2rem;
+}
+
+#room-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 0.4rem;
+}
+
+#stream-area, #chat-area, #help-area details {
+    width: 100%;
+    max-width: 720px;
+}
+
+#comm-area {
+    min-height: 50vh;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-#stream-area video {
-    width: 100%;
+#stream-area {
+    display: flex;
+    flex-direction: column;
 }
 
-#stream-area .chip {
+[class^='video-container'] {
+    flex-grow: 1;
+    position: relative;
+}
+
+[class^='video-container'] video {
+    width: 100%;
+    height: auto;
+    max-height: 85vh;
+}
+
+.stream-user {
     position: absolute;
     z-index: 1;
-    margin: 0.25rem;
-}
-
-#stream-area [class^="video-container"] {
-    flex-grow: 1;
-}
-
-.video-container {
-    max-width: 50%;
-}
-
-.video-container-single {
-    max-width: inherit;
+    padding: 1rem;
+    background-color: var(--primary-color);
+    border-radius: 2rem;
+    margin: 0.5rem;
+    font-size: 1rem;
 }
 
 #chat-area {
-    padding-top: 0.4rem;
-    padding-bottom: 0.4rem;
-
     display: flex;
     flex-direction: column;
+    align-items: end;
+    gap: 0.5rem;
+    flex-grow: 1;
+    padding: 1rem;
 }
 
 #messages-container {
     width: 100%;
-    min-height: 12rem;
+    height: 50vh;
     flex-grow: 1;
-    overflow: auto;
-    padding-right: 0.5em;
+    background-color: #4a5056;
+    overflow-y: auto;
 }
 
 .message {
-    padding: 0.15em 0;
+    padding: 1rem;
 }
 
-.message p {
+.message>* {
     margin: 0;
 }
 
-.msg-self {
-    text-align: right;
-}
-
 .msg-info {
-    padding: 0.5em 0;
+    text-align: center;
 }
 
-#message-input {
-    resize: none;
+.msg-self {
+    text-align: end;
+}
+
+#send-section {
+    display: flex;
+    justify-content: center;
 }
 
 #send-area {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-    margin-top: 0.25rem;
+    gap: 1rem;
 }
 
-.toast {
-    width: auto;
-    position: fixed;
-    bottom: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
-    display: none;
-}
-
-.toast-active {
-    display: block;
-}
-
-.modal-container {
-    border-radius: 20px;
-}
-
-#share-modal .content {
+#help-area {
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
-#share-modal .content p {
+#help-area details {
+    padding: 1rem;
+}
+
+#help-area details * {
+    margin: 0;
+}
+
+#help-area details p {
+    margin-bottom: 1rem;
+}
+
+.modal-title {
     text-align: center;
 }
 
-#share-modal button {
-    border-radius: 20px;
+.modal section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-#share-modal button:hover {
-    background-color:lavender;
+.custom-switch label {
+    white-space: nowrap;
+}
+
+@media (min-width: 720px) {
+    #chat-opts {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    #stream-options {
+        flex-wrap: nowrap;
+    }
+
+    #comm-area {
+        flex-direction: row;
+        justify-content: center;
+        align-items: stretch;
+    }
+
+    #stream-area, #chat-area {
+        max-width: unset;
+    }
+
+    #stream-area, #chat-area {
+        width: unset;
+    }
+
+    #stream-area {
+        max-width: 75vw;
+        display: none;
+        padding: 1rem 0;
+        flex-grow: 2;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .video-container-single {
+        min-width: 50%;
+    }
+
+    .video-container {
+        max-width: 50%;
+    }
+
+    #chat-area {
+        max-width: 50vw;
+        flex-grow: 1;
+    }
 }
