@@ -20,7 +20,9 @@
 
 {{ $config := resources.Get $configPath -}}
 <script src="{{ $config.RelPermalink }}" defer></script>
-<script src="{{ `chat/js/script.js` | relURL }}" defer></script>
+
+{{ $script := resources.Get "chat/js/chat.js" | js.Build "chat/js/chat.js" }}
+<script src="{{ $script.RelPermalink }}" defer></script>
 {{ end }}
 
 {{ define "nav" }}

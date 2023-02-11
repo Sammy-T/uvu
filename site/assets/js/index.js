@@ -1,2 +1,3 @@
 // Include external JavaScript
-window.halfmoon = require('halfmoon');
+const halfmoon = require('halfmoon');
+halfmoon.onDOMContentLoaded();

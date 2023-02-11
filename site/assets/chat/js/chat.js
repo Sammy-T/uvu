@@ -1,3 +1,6 @@
+const halfmoon = require('halfmoon');
+import { scrollIntoView } from 'scroll-js';
+
 const configuration = {
     iceServers: [
         {urls: 'stun:stun.l.google.com:19302'}
@@ -463,7 +466,7 @@ function registerDataChannelListeners(participant, dataChannel) {
         msgEl.querySelector('.msg-content').innerText = disconnectMsg;
 
         msgContainer.appendChild(msgEl);
-        msgEl.scrollIntoView(false);
+        scrollIntoView(msgEl, msgContainer, { behavior: 'smooth' });
 
         delete participantNames[participant]; // Remove the participant's username
     }
@@ -556,7 +559,7 @@ function registerDataChannelListeners(participant, dataChannel) {
         if(message.type === 'message') msgEl.querySelector('.msg-username').innerText = message.username;
 
         msgContainer.appendChild(msgEl);
-        msgEl.scrollIntoView(false);
+        scrollIntoView(msgEl, msgContainer, { behavior: 'smooth' });
     });
 
     dataChannel.addEventListener('error', event => {
@@ -584,7 +587,7 @@ function sendMsg() {
     msgEl.querySelector('.msg-content').innerText = msgInput.value;
 
     msgContainer.appendChild(msgEl);
-    msgEl.scrollIntoView(false);
+    scrollIntoView(msgEl, msgContainer, { behavior: 'smooth' });
 
     msgInput.value = ''; // Clear the message input field
 }
