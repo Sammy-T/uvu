@@ -26,6 +26,7 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
-    "halfmoon": "^1.1.1"
+    "halfmoon": "^1.1.1",
+    "scroll-js": "^3.5.2"
   }
 }
