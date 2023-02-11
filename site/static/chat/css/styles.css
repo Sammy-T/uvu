@@ -2,12 +2,22 @@
     justify-content: space-between;
 }
 
+#chat-opts {
+    padding: 0 1rem;
+}
+
 #chat-opts>* {
     padding: 1rem 0;
 }
 
 #chat-opts form {
     gap: 2rem;
+}
+
+#room-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 0.4rem;
 }
 
 #stream-area, #chat-area, #help-area details {
@@ -122,14 +132,29 @@
     gap: 0.5rem;
 }
 
+.custom-switch label {
+    white-space: nowrap;
+}
+
 @media (min-width: 720px) {
+    #chat-opts {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    #stream-options {
+        flex-wrap: nowrap;
+    }
+
     #comm-area {
         flex-direction: row;
         justify-content: center;
         align-items: stretch;
     }
 
-    #stream-area, #chat-area, #help-area details {
+    #stream-area, #chat-area {
         max-width: unset;
     }
 
