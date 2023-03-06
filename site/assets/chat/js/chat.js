@@ -985,19 +985,6 @@ function adjustCommAreaUi() {
     }else{
         streamArea.style.display = 'none';
     }
-
-    const videoContainers = document.querySelectorAll('#stream-area [class^="video-container"]');
-    
-    // Style the video elements to scale along with their amount
-    if(videoContainers.length > 1) {
-        videoContainers.forEach(container => {
-            container.classList.remove('video-container-single');
-            container.classList.add('video-container');
-        });
-    }else if(videoContainers.length === 1) {
-        videoContainers[0].classList.remove('video-container');
-        videoContainers[0].classList.add('video-container-single');
-    }
 }
 
 function initUsernameModal() {

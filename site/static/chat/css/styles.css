@@ -38,14 +38,15 @@
     flex-direction: column;
 }
 
-[class^='video-container'] {
+.video-container {
     flex-grow: 1;
     position: relative;
+    background-color: black;
 }
 
-[class^='video-container'] video {
+.video-container video {
     width: 100%;
-    height: auto;
+    height: 100%;
     max-height: 85vh;
 }
 
@@ -171,12 +172,16 @@
         flex-wrap: wrap;
     }
 
-    .video-container-single {
-        min-width: 50%;
-    }
-
     .video-container {
         max-width: 50%;
+    }
+
+    .video-container:only-of-type {
+        max-width: 100%;
+    }
+
+    .video-container video:not(:only-of-type) {
+        width: unset;
     }
 
     #chat-area {
