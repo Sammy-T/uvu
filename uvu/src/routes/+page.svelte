@@ -3,21 +3,13 @@
     import videoIc from '$lib/assets/video-ic.svg?raw';
     import screenIc from '$lib/assets/screen-ic.svg?raw';
     import chatIc from '$lib/assets/chat-ic.svg?raw';
+    import Nav from '$lib/components/Nav.svelte';
     import Footer from '$lib/components/Footer.svelte';
 </script>
 
 <main id="main-content" class="container-fluid">
     <section class="lead-area">
-        <nav>
-            <ul>
-                <li><a href="/">{@html logo}</a></li>
-            </ul>
-
-            <ul>
-                <li><a href="/about">about</a></li>
-                <li><a href="##" role="button">chat</a></li>
-            </ul>
-        </nav>
+        <Nav padded={false} />
 
         <div class="lead">
             <div class="lead-img">{@html logo}</div>
