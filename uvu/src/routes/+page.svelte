@@ -27,7 +27,7 @@
     </section>
 
     <section class="feature-area">
-        <h6>Uvu rooms are no sign-up, single-serving sessions featuring..</h6>
+        <h4>Uvu rooms are no sign-up, single-serving sessions featuring..</h4>
 
         <table>
             <tr>
@@ -92,13 +92,14 @@
     }
 
     .feature-area {
-        padding: 4rem 2rem;
+        padding: calc(var(--spacing) * 6) calc(var(--spacing) * 2);
         background-image: linear-gradient(45deg, #009797ff, #092d2dff);
     }
 
     .feature-area > * {
         text-align: center;
         color: white;
+        font-weight: 400;
     }
 
     table {
