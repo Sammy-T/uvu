@@ -5,13 +5,17 @@ html, body {
     margin: 0;
 }
 
-#main-footer, .lead-area {
+main, #main-footer, .lead-area {
     background-image: linear-gradient(45deg, #004a5cff, #04121cff);
 }
 
 nav:first-of-type svg {
     height: 3rem;
     width: 3rem;
+}
+
+nav [role="button"] {
+    padding: calc(var(--nav-link-spacing-vertical) * 0.5) calc(var(--nav-link-spacing-horizontal) * 2);
 }
 
 .lead > svg {

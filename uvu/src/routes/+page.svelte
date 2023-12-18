@@ -14,7 +14,7 @@
             </ul>
 
             <ul>
-                <li><a href="##">about</a></li>
+                <li><a href="/about">about</a></li>
                 <li><a href="##" role="button">chat</a></li>
             </ul>
         </nav>
@@ -54,12 +54,8 @@
     }
 
     section {
-        padding: 0 1rem;
+        padding: 0 var(--spacing);
         margin: 0;
-    }
-
-    nav [role="button"] {
-        padding: calc(var(--nav-link-spacing-vertical) * 0.5) calc(var(--nav-link-spacing-horizontal) * 2);
     }
 
     .lead-area {
