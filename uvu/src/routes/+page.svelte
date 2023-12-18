@@ -20,7 +20,7 @@
         </nav>
 
         <div class="lead">
-            {@html logo}
+            <div class="lead-img">{@html logo}</div>
             <p>Peer-to-peer chat &amp; conferencing</p>
             <a href="##" role="button">Start chatting</a>
         </div>
@@ -63,15 +63,26 @@
     }
 
     .lead-area {
-        min-height: 100vh;
-        padding-bottom: 1rem;
-        background-image: linear-gradient(45deg, #004a5cff, #04121cff);
+        height: 100vh;
+        padding-bottom: calc(var(--block-spacing-vertical));
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
     }
 
     .lead {
+        flex-grow: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
+    }
+
+    .lead-img {
+        flex-grow: 1;
+        width: 100%;
+        display: flex;
+        overflow-y: auto;
+        justify-content: center;
     }
 
     .lead > p {

@@ -1,7 +1,5 @@
 <footer id="main-footer">
-    <small>
-        <a href="##">About &amp; Privacy</a>
-    </small>
+    <small><a href="##">About &amp; Privacy</a></small>
 
     <small>Website by <a href="https://sammy-t.com" target="_blank">Sammy T</a></small>
 </footer>
@@ -13,6 +11,5 @@
         flex-wrap: wrap;
         justify-content: space-between;
         gap: 1rem;
-        background-image: linear-gradient(45deg, #004a5cff, #04121cff);
     }
 </style>
