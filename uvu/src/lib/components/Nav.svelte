@@ -6,7 +6,7 @@
 
 <nav class:padded>
     <ul>
-        <li><a href="/">{@html logo}</a></li>
+        <li class="brand"><a href="/">{@html logo}</a></li>
     </ul>
 
     <ul>

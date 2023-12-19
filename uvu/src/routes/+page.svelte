@@ -7,14 +7,14 @@
     import Footer from '$lib/components/Footer.svelte';
 </script>
 
-<main id="main-content" class="container-fluid">
+<main id="main-container" class="container-fluid">
     <section class="lead-area">
         <Nav padded={false} />
 
         <div class="lead">
             <div class="lead-img">{@html logo}</div>
             <p>Peer-to-peer chat &amp; conferencing</p>
-            <a href="##" role="button">Start chatting</a>
+            <a href="/chat" role="button">Start chatting</a>
         </div>
     </section>
 
@@ -41,7 +41,7 @@
 <Footer />
 
 <style>
-    #main-content {
+    #main-container {
         padding: 0;
     }
 

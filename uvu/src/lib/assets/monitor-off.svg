@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="none"
+   stroke="currentColor"
+   stroke-width="2"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   class="feather feather-monitor"
+   version="1.1"
+   id="svg2"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2" />
+  <path
+     id="rect5"
+     style="display:inline;fill:none"
+     d="M 8.317662,2.9390089 20,3 c 1.107984,0.00578 2,0.8920011 2,2 0,0 0,8.988567 0,10 0,1.011433 -0.06955,1.802163 -1.298602,1.908513" />
+  <path
+     id="path7"
+     style="display:inline;fill:none"
+     d="M 15.395377,17.030496 4,17 C 2.8920051,16.997035 2,16.107999 2,15 V 5 C 2,4.218998 2.4431912,3.5453139 3.0928242,3.2156981" />
+  <rect
+     x="2"
+     y="3"
+     width="20"
+     height="14"
+     rx="2"
+     ry="2"
+     id="rect1"
+     style="display:none" />
+  <line
+     x1="8"
+     y1="21"
+     x2="16"
+     y2="21"
+     id="line1"
+     style="display:inline" />
+  <line
+     x1="12"
+     y1="17"
+     x2="12"
+     y2="21"
+     id="line2"
+     style="display:inline" />
+  <path
+     style="display:inline;fill:none;stroke-width:1.9;stroke-dasharray:none"
+     d="M 1.4027954,1.2198221 20.767472,22.07878"
+     id="path4" />
+</svg>
