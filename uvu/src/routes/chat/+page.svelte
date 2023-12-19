@@ -1,4 +1,5 @@
 <script>
+    import adapter from 'webrtc-adapter';
     import logo from '$lib/assets/uvu-logo.svg?raw';
     import ChatActions from '$lib/components/chat/ChatActions.svelte';
     import TextChat from '$lib/components/chat/TextChat.svelte';
