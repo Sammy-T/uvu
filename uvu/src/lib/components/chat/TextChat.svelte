@@ -1,3 +1,8 @@
+<script>
+    import Info from './messages/Info.svelte';
+    import Message from './messages/Message.svelte';
+</script>
+
 <div id="chat-area">
     <div id="messages">
         <div class="system-msg">
