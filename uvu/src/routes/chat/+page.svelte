@@ -16,7 +16,7 @@
 </nav>
 
 <main id="main-container" class="container-fluid">
-    <MediaContainer />
+    <!-- <MediaContainer /> -->
     <TextChat />
 </main>
 
