@@ -20,6 +20,7 @@
 
 <style>
     #chat-area {
+        min-width: 30vw;
         max-width: 720px;
         height: 75vh;
         padding: var(--spacing);
