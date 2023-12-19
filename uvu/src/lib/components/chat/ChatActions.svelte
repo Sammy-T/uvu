@@ -30,4 +30,8 @@
         border-radius: calc(var(--border-radius) * 4);
         background-color: rgba(255, 255, 255, 0.175);
     }
+
+    nav li {
+        padding: calc(var(--nav-element-spacing-vertical) * 0.5) var(--nav-element-spacing-horizontal);
+    }
 </style>

@@ -1,6 +1,7 @@
 <script>
     import logo from '$lib/assets/uvu-logo.svg?raw';
     import ChatActions from '$lib/components/chat/ChatActions.svelte';
+    import TextChat from '$lib/components/chat/TextChat.svelte';
 </script>
 
 <nav>
@@ -14,7 +15,11 @@
 </nav>
 
 <main id="main-container" class="container-fluid">
-    <!-- <h1>Hello</h1> -->
+    <!-- <div>
+        <h2>Media</h2>
+    </div> -->
+
+    <TextChat />
 </main>
 
 <style>
@@ -30,5 +35,8 @@
     #main-container {
         min-height: 100vh;
         padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 </style>
