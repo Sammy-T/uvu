@@ -50,8 +50,9 @@
             <li><a href="#create" on:click|preventDefault={handleCreate}>Create</a></li>
             <li><a href="#join" on:click|preventDefault={handleShowRoomIdModal}>Join</a></li>
         {:else}
-            <li><a href="#share">{@html phoneShare}</a></li>
-            <li><a href="#hangup" on:click|preventDefault={handleHangUp}>{@html phoneHangUp}</a></li>
+            <li><a href="#share" data-tooltip="Share Room" data-placement="bottom">{@html phoneShare}</a></li>
+            <li><a href="#hangup" data-tooltip="Hang up" data-placement="bottom" 
+                on:click|preventDefault={handleHangUp}>{@html phoneHangUp}</a></li>
         {/if}
     </ul>
 
