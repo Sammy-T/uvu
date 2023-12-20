@@ -47,11 +47,11 @@
     <ul>
         {#if !$inRoom}
             <li>{@html phone}</li>
-            <li><a href="#Create" on:click|preventDefault={handleCreate}>Create</a></li>
-            <li><a href="#Join" on:click|preventDefault={handleShowRoomIdModal}>Join</a></li>
+            <li><a href="#create" on:click|preventDefault={handleCreate}>Create</a></li>
+            <li><a href="#join" on:click|preventDefault={handleShowRoomIdModal}>Join</a></li>
         {:else}
-            <li><a href="#Share">{@html phoneShare}</a></li>
-            <li><a href="#Hangup" on:click|preventDefault={handleHangUp}>{@html phoneHangUp}</a></li>
+            <li><a href="#share">{@html phoneShare}</a></li>
+            <li><a href="#hangup" on:click|preventDefault={handleHangUp}>{@html phoneHangUp}</a></li>
         {/if}
     </ul>
 
@@ -81,5 +81,9 @@
 
     nav li {
         padding: calc(var(--nav-element-spacing-vertical) * 0.5) var(--nav-element-spacing-horizontal);
+    }
+
+    [href="#hangup"] {
+        color: tomato;
     }
 </style>
