@@ -74,6 +74,9 @@
         flex-wrap: wrap;
         border-radius: calc(var(--border-radius) * 4);
         background-color: rgba(255, 255, 255, 0.175);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+
     }
 
     nav li {
