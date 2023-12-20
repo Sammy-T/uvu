@@ -9,8 +9,14 @@
     import monitor from '$lib/assets/monitor.svg?raw';
     import monitorOff from '$lib/assets/monitor-off.svg?raw';
     import more from '$lib/assets/more-vertical.svg?raw';
-    import { roomId } from '$lib/stores';
+    import RoomIdModal from './modal/RoomIdModal.svelte';
+    import { inRoom } from '$lib/stores';
     import { createRoom, exitRoom } from '$lib/util';
+    import { writable } from 'svelte/store';
+    import { setContext } from 'svelte';
+
+    const showRoomIdModal = writable(false);
+    setContext('showRoomIdModal', showRoomIdModal);
 
     async function handleCreate() {
         try {
@@ -18,6 +24,10 @@
         } catch(error) {
             // Already caught and re-thrown in util
         }
+    }
+
+    async function handleShowRoomIdModal() {
+        $showRoomIdModal = true;
     }
 
     async function handleHangUp() {
@@ -31,10 +41,10 @@
 
 <nav>
     <ul>
-        {#if !$roomId}
+        {#if !$inRoom}
             <li>{@html phone}</li>
             <li><a href="#Create" on:click|preventDefault={handleCreate}>Create</a></li>
-            <li><a href="#Join">Join</a></li>
+            <li><a href="#Join" on:click|preventDefault={handleShowRoomIdModal}>Join</a></li>
         {:else}
             <li><a href="#Share">{@html phoneShare}</a></li>
             <li><a href="#Hangup" on:click|preventDefault={handleHangUp}>{@html phoneHangUp}</a></li>
@@ -48,6 +58,10 @@
         <li><a href="##">{@html more}</a></li>
     </ul>
 </nav>
+
+{#if $showRoomIdModal}
+    <RoomIdModal />
+{/if}
 
 <style>
     nav {
