@@ -15,22 +15,24 @@
 </script>
 
 <div id="chat-area">
-    <div id="messages">
-        {#if $messages.length > 0}
-            {#each $messages as message, i (i)}
-                {#if message.type === 'info'}
-                    <Info message={message.content} />
-                {:else if message.type === 'message' && message.user === localUid}
-                    <Message self={true} user={message.username} message={message.content} />
-                {:else if message.type === 'message'}
-                    <Message user={message.username} message={message.content} />
-                {/if}
-            {/each}
-        {:else}
-            <div class="system-msg">
-                <p>No messages</p>
-            </div>
-        {/if}
+    <div id="msg-container">
+        <div id="messages">
+            {#if $messages.length > 0}
+                {#each $messages as message, i (i)}
+                    {#if message.type === 'info'}
+                        <Info message={message.content} />
+                    {:else if message.type === 'message' && message.user === localUid}
+                        <Message self={true} user={message.username} message={message.content} />
+                    {:else if message.type === 'message'}
+                        <Message user={message.username} message={message.content} />
+                    {/if}
+                {/each}
+            {:else}
+                <div class="system-msg">
+                    <p>No messages</p>
+                </div>
+            {/if}
+        </div>
     </div>
 
     <textarea placeholder="Message" bind:value={msgText}></textarea>
@@ -52,13 +54,20 @@
         justify-content: end;
     }
 
-    #messages {
+    #msg-container {
+        position: relative;
         flex-grow: 1;
+    }
+
+    #messages {
         overflow-y: auto;
         margin-bottom: calc(var(--spacing) * 0.75);
-        display: flex;
-        flex-direction: column;
-        justify-content: end;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        padding: 0 calc(var(--spacing) * 0.5);
     }
 
     #messages * {
