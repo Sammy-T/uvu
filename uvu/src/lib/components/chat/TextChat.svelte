@@ -8,6 +8,13 @@
 
     let msgText;
 
+    /**
+     * @param {KeyboardEvent} event
+     */
+    function handleKey(event) {
+        if(event.key === 'Enter' && event.ctrlKey && $sendEnabled) handleSend();
+    }
+
     function handleSend() {
         sendMessage(msgText);
         msgText = '';
@@ -35,7 +42,7 @@
         </div>
     </div>
 
-    <textarea placeholder="Message" bind:value={msgText}></textarea>
+    <textarea placeholder="Message" bind:value={msgText} on:keyup={handleKey}></textarea>
 
     <div id="send-area">
         <kbd>Ctrl + Enter</kbd>
