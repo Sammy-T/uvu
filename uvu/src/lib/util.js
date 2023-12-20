@@ -15,7 +15,7 @@ const config = {
 
 const dbRoot = 'uvu';
 
-let localUid = Math.random().toString(36).slice(-8);
+export let localUid = Math.random().toString(36).slice(-8);
 
 /** @type {?import ('firebase/firestore').DocumentReference} */
 let roomRef;
@@ -43,6 +43,9 @@ const offerTimes = {};
 
 /** @type {Object.<string, Date>} */
 const answerTimes = {};
+
+/** @type {Object.<string, string>} */
+const participantNames = {};
 
 export async function createRoom() {
     try {
@@ -359,7 +362,8 @@ function registerDataChannelListeners(participant, dataChannel) {
 
         const message = {
             type: 'info',
-            category: 'hello',
+            category: 'connection:established',
+            user: localUid,
             username: get(username),
             content: `Connected to ${get(username)}`
         };
@@ -392,6 +396,10 @@ function registerDataChannelListeners(participant, dataChannel) {
         const message = JSON.parse(event.data);
         console.log(`Message received from participant '${participant}':`, message);
 
+        if(message.type === 'info' && message.category === 'connection:established') {
+            participantNames[participant] = message.username;
+        }
+
         messages.set([...get(messages), message]);
     };
 
@@ -400,6 +408,26 @@ function registerDataChannelListeners(participant, dataChannel) {
         const { error } = event;
         console.warn(`Data channel error for participant '${participant}'.`, error);
     };
+}
+
+/**
+ * @param {String} content 
+ */
+export function sendMessage(content) {
+    const message = {
+        type: 'message',
+        user: localUid,
+        username: get(username),
+        content
+    };
+
+    // Send message to all data channels
+    for(const participant in dataChannels) {
+        const dataChannel = dataChannels[participant];
+        dataChannel.send(JSON.stringify(message));
+    }
+
+    messages.set([...get(messages), message]);
 }
 
 /** 
@@ -417,6 +445,15 @@ function onParticipantDisconnected(participant) {
 
     delete peerConnections[participant];
     delete dataChannels[participant];
+
+    const message = {
+        type: 'info',
+        content: `Disconnected from ${participantNames[participant]}`
+    };
+
+    messages.set([...get(messages), message]);
+
+    delete participantNames[participant];
 }
 
 /**

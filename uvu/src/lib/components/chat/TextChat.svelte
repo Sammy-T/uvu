@@ -1,20 +1,43 @@
 <script>
+    import { sendEnabled } from '$lib/stores';
+    import { sendMessage } from '$lib/util';
     import Info from './messages/Info.svelte';
     import Message from './messages/Message.svelte';
+    import { messages } from '$lib/stores';
+    import { localUid } from '$lib/util';
+
+    let msgText;
+
+    function handleSend() {
+        sendMessage(msgText);
+        msgText = '';
+    }
 </script>
 
 <div id="chat-area">
     <div id="messages">
-        <div class="system-msg">
-            <p>No messages</p>
-        </div>
+        {#if $messages.length > 0}
+            {#each $messages as message, i (i)}
+                {#if message.type === 'info'}
+                    <Info message={message.content} />
+                {:else if message.type === 'message' && message.user === localUid}
+                    <Message self={true} user={message.username} message={message.content} />
+                {:else if message.type === 'message'}
+                    <Message user={message.username} message={message.content} />
+                {/if}
+            {/each}
+        {:else}
+            <div class="system-msg">
+                <p>No messages</p>
+            </div>
+        {/if}
     </div>
 
-    <textarea placeholder="Message"></textarea>
+    <textarea placeholder="Message" bind:value={msgText}></textarea>
 
     <div id="send-area">
         <kbd>Ctrl + Enter</kbd>
-        <button disabled>Send</button>
+        <button on:click={handleSend} disabled={!$sendEnabled}>Send</button>
     </div>
 </div>
 

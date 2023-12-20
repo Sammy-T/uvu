@@ -10,7 +10,7 @@
     import monitorOff from '$lib/assets/monitor-off.svg?raw';
     import more from '$lib/assets/more-vertical.svg?raw';
     import RoomIdModal from './modal/RoomIdModal.svelte';
-    import { inRoom } from '$lib/stores';
+    import { inRoom, username } from '$lib/stores';
     import { createRoom, exitRoom } from '$lib/util';
     import { writable } from 'svelte/store';
     import { setContext } from 'svelte';
@@ -19,6 +19,8 @@
     setContext('showRoomIdModal', showRoomIdModal);
 
     async function handleCreate() {
+        if(!$username) return;
+
         try {
             await createRoom();
         } catch(error) {
@@ -27,6 +29,8 @@
     }
 
     async function handleShowRoomIdModal() {
+        if(!$username) return;
+        
         $showRoomIdModal = true;
     }
 

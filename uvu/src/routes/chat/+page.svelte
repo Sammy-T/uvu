@@ -2,8 +2,10 @@
     import adapter from 'webrtc-adapter';
     import logo from '$lib/assets/uvu-logo.svg?raw';
     import ChatActions from '$lib/components/chat/ChatActions.svelte';
+    import UsernameInput from '$lib/components/chat/UsernameInput.svelte';
     import TextChat from '$lib/components/chat/TextChat.svelte';
     import MediaContainer from '$lib/components/chat/MediaContainer.svelte';
+    import { username } from '$lib/stores';
 </script>
 
 <nav>
@@ -18,7 +20,12 @@
 
 <main id="main-container" class="container-fluid">
     <!-- <MediaContainer /> -->
-    <TextChat />
+
+    {#if !$username}
+        <UsernameInput />
+    {:else}
+        <TextChat />
+    {/if}
 </main>
 
 <style>
