@@ -1,8 +1,16 @@
 <script>
+    import { onMount } from "svelte";
+
     export let message = "Info";
+
+    let infoComponent;
+
+    onMount(() => {
+        infoComponent.scrollIntoView({block: 'end', inline: 'nearest', behavior: 'smooth'});
+    });
 </script>
 
-<p>{message}</p>
+<p bind:this={infoComponent}>{message}</p>
 
 <style>
     p {
