@@ -83,6 +83,10 @@
         padding: calc(var(--nav-element-spacing-vertical) * 0.5) var(--nav-element-spacing-horizontal);
     }
 
+    [href="#share"] {
+        color: mediumseagreen;
+    }
+
     [href="#hangup"] {
         color: tomato;
     }
