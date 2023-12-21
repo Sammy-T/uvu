@@ -10,13 +10,31 @@
     import monitorOff from '$lib/assets/monitor-off.svg?raw';
     import more from '$lib/assets/more-vertical.svg?raw';
     import RoomIdModal from './modal/RoomIdModal.svelte';
-    import { inRoom, username } from '$lib/stores';
+    import { inRoom, screenShareEnabled, streamConstraints, username } from '$lib/stores';
     import { createRoom, exitRoom } from '$lib/util';
     import { writable } from 'svelte/store';
     import { setContext } from 'svelte';
 
     const showRoomIdModal = writable(false);
     setContext('showRoomIdModal', showRoomIdModal);
+
+    function toggleAudio() {
+        const constraints = $streamConstraints;
+        constraints.audio = !constraints.audio;
+
+        $streamConstraints = constraints;
+    }
+
+    function toggleVideo() {
+        const constraints = $streamConstraints;
+        constraints.video = !constraints.video;
+
+        $streamConstraints = constraints;
+    }
+
+    function toggleScreenShare() {
+        $screenShareEnabled = !$screenShareEnabled;
+    }
 
     async function handleCreate() {
         if(!$username) return;
@@ -57,10 +75,34 @@
     </ul>
 
     <ul>
-        <li><a href="##">{@html micOff}</a></li>
-        <li><a href="##">{@html videoOff}</a></li>
-        <li><a href="##">{@html monitorOff}</a></li>
-        <li><a href="##">{@html more}</a></li>
+        <li>
+            <a href="#mic" on:click|preventDefault={toggleAudio}>
+                {#if $streamConstraints.audio}
+                    {@html mic}
+                {:else}
+                    {@html micOff}
+                {/if}
+            </a>
+        </li>
+        <li>
+            <a href="#video" on:click|preventDefault={toggleVideo}>
+                {#if $streamConstraints.video}
+                    {@html video}
+                {:else}
+                    {@html videoOff}
+                {/if}
+            </a>
+        </li>
+        <li>
+            <a href="#screenshare" on:click|preventDefault={toggleScreenShare}>
+                {#if $screenShareEnabled}
+                    {@html monitor}
+                {:else}
+                    {@html monitorOff}
+                {/if}
+            </a>
+        </li>
+        <li><a href="#options">{@html more}</a></li>
     </ul>
 </nav>
 

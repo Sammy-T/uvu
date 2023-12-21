@@ -5,7 +5,7 @@
     import UsernameInput from '$lib/components/chat/UsernameInput.svelte';
     import TextChat from '$lib/components/chat/TextChat.svelte';
     import MediaContainer from '$lib/components/chat/MediaContainer.svelte';
-    import { username } from '$lib/stores';
+    import { localDisplayStream, localStream, remoteStreams, username } from '$lib/stores';
 </script>
 
 <nav>
@@ -19,7 +19,9 @@
 </nav>
 
 <main id="main-container" class="container-fluid">
-    <!-- <MediaContainer /> -->
+    {#if $localStream || $localDisplayStream || Object.keys($remoteStreams).length > 0}
+        <MediaContainer />
+    {/if}
 
     {#if !$username}
         <UsernameInput />

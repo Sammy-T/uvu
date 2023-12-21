@@ -1,7 +1,7 @@
 import { firebaseConfig } from './firebase-config';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, addDoc, collection, serverTimestamp, deleteDoc, doc, onSnapshot, Timestamp, setDoc, DocumentSnapshot, updateDoc, getDoc, arrayUnion, query, where, getDocs, writeBatch, arrayRemove } from 'firebase/firestore';
-import { inRoom, messages, roomId, sendEnabled, username } from './stores';
+import { inRoom, localDisplayStream, localStream, messages, remoteStreams, roomId, screenShareEnabled, sendEnabled, streamConstraints, username } from './stores';
 import { get } from 'svelte/store';
 
 const app = initializeApp(firebaseConfig);
@@ -47,8 +47,18 @@ const answerTimes = {};
 /** @type {Object.<string, string>} */
 const participantNames = {};
 
+const localStreamQueue = [];
+const localDisplayStreamQueue = [];
+let remoteStreamQueue = [];
+let remoteStreamInfos = [];
+
 export async function createRoom() {
     try {
+        const constraints = get(streamConstraints);
+
+        if(constraints.audio || constraints.video) await startStream();
+        if(get(screenShareEnabled)) await startDisplayStream();
+        
         const roomData = {
             participants: [localUid],
             created: serverTimestamp()
@@ -70,51 +80,67 @@ export async function createRoom() {
 }
 
 export async function joinRoom() {
-    if(!get(roomId)) {
-        console.warn('No room id to join.');
-        return;
+    try {
+        if(!get(roomId)) throw new Error('No room id to join.');
+    
+        roomRef = doc(db, dbRoot, get(roomId));
+        connectionsRef = collection(db, roomRef.path, 'connections');
+    
+        const snapshot = await getDoc(roomRef);
+    
+        if(!snapshot.exists()) throw new Error('Room not found.');
+    
+        const constraints = get(streamConstraints);
+
+        if(constraints.audio || constraints.video) await startStream();
+        if(get(screenShareEnabled)) await startDisplayStream();
+    
+        // Retrieve the room data
+        const roomData = snapshot.data();
+        console.log('Room', snapshot.id, roomData);
+
+        // Cancel joining if the room limit has already been reached
+        if(roomData.participants.length >= 4) {
+            console.warn('Room limit reached. Unable to join.');
+            await exitRoom();
+            return;
+        }
+    
+        // Check for uid overlap (This should rarely need to be called if ever)
+        while(roomData.participants.includes(localUid)) {
+            localUid = Math.random().toString(36).slice(-8);
+            console.warn(`Uid conflict. New uid created: ${localUid}`);
+        }
+    
+        // Update the room document
+        const updateData = {
+            participants: arrayUnion(localUid)
+        };
+    
+        await updateDoc(roomRef, updateData);
+    
+        // Create offers
+        roomData.participants.forEach(participant => createOffer(participant));
+    
+        addNegotiator();
+    
+        inRoom.set(true);
+    } catch(error) {
+        console.error('Unable to join room.', error);
+        throw error;
     }
-
-    roomRef = doc(db, dbRoot, get(roomId));
-    connectionsRef = collection(db, roomRef.path, 'connections');
-
-    const snapshot = await getDoc(roomRef);
-
-    if(!snapshot.exists()) {
-        console.warn('Room not found.');
-        return;
-    }
-
-    //// TODO: Streams
-
-    // Retrieve the room data
-    const roomData = snapshot.data();
-    console.log('Room', snapshot.id, roomData);
-
-    // Check for uid overlap (This should rarely need to be called if ever)
-    while(roomData.participants.includes(localUid)) {
-        localUid = Math.random().toString(36).slice(-8);
-        console.warn(`Uid conflict. New uid created: ${localUid}`);
-    }
-
-    // Update the room document
-    const updateData = {
-        participants: arrayUnion(localUid)
-    };
-
-    await updateDoc(roomRef, updateData);
-
-    // Create offers
-    roomData.participants.forEach(participant => createOffer(participant));
-
-    addNegotiator();
-
-    inRoom.set(true);
 }
 
 export async function exitRoom() {
     try {
         if(!roomRef) throw new Error('Missing room ref.');
+
+        if(get(localStream)) stopStream();
+        if(get(localDisplayStream)) stopDisplayStream();
+
+        for(const participant in get(remoteStreams)) {
+            removeRemoteStream(participant);
+        }
 
         // Unsubscribe from db listeners
         if(unsub) {
@@ -218,14 +244,25 @@ async function createOffer(participant) {
     const peerConnection = new RTCPeerConnection(config);
     peerConnections[participant] = peerConnection;
 
-    //// TODO: Register peer conn listeners
+    registerPeerConnectionListeners(participant, peerConnection);
 
     // Create a data channel on the connection
     // (A channel or stream must be present for ICE candidate events to fire.)
     const dataChannel = peerConnection.createDataChannel('messages');
     dataChannels[participant] = dataChannel;
 
-    //// TODO: Add stream tracks
+    // Add the local stream(s) tracks to the connection
+    if(get(localStream)) {
+        get(localStream).getTracks().forEach(track => {
+            peerConnection.addTrack(track, get(localStream));
+        });
+    }
+
+    if(get(localDisplayStream)) {
+        get(localDisplayStream).getTracks().forEach(track => {
+            peerConnection.addTrack(track, get(localDisplayStream));
+        });
+    }
 
     registerDataChannelListeners(participant, dataChannel);
 
@@ -274,7 +311,7 @@ async function createAnswer(participant, connectionDoc) {
         peerConnection = new RTCPeerConnection(config);
         peerConnections[participant] = peerConnection;
 
-        //// TODO: Register peer conn listeners
+        registerPeerConnectionListeners(participant, peerConnection);
 
         // Listen for data channels
         peerConnection.ondatachannel = (event) => {
@@ -284,7 +321,11 @@ async function createAnswer(participant, connectionDoc) {
             registerDataChannelListeners(participant, channel);
         };
 
-        //// TODO: Add streams
+        // Queue adding tracks for later so that renegotiation is triggered
+        // (This helps address the issue of the offerer not receiving the answerer's tracks
+        // when the offerer hasn't created any media streams on the connection)
+        if(get(localStream)) localStreamQueue.push(participant);
+        if(get(localDisplayStream)) localDisplayStreamQueue.push(participant);
 
         collectIceCandidates(connectionDoc.ref, participant, peerConnection);
     } else {
@@ -313,10 +354,40 @@ async function createAnswer(participant, connectionDoc) {
 
     // Send the answer to the signaling channel
     await updateDoc(connectionDoc.ref, answerData);
-    console.log(`Updated connection doc(${connectionDoc.id}) with answer for participant '${participant}'.`)
+    console.log(`Updated connection doc(${connectionDoc.id}) with answer for participant '${participant}'.`);
 }
 
-//// TODO: Renegotiate offer
+/**
+ * @param {String} participant 
+ * @param {RTCPeerConnection} peerConnection 
+ */
+async function renegotiateOffer(participant, peerConnection) {
+    // Create a new offer
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+
+    console.log(`Renegotiating offer to participant '${participant}'.`, offer);
+
+    offerTimes[participant] = new Date();
+
+    const connectionData = {
+        from: localUid,
+        to: participant,
+        offerTime: Timestamp.fromDate(offerTimes[participant]),
+        offer: {
+            type: offer.type,
+            sdp: offer.sdp
+        },
+        answerTime: null,
+        answer: null
+    };
+
+    const connectionDocRef = connectionDocRefs[participant];
+
+    // Send the offer to the signaling channel
+    await updateDoc(connectionDocRef, connectionData);
+    console.log(`Updated connection doc(${connectionDocRef.id}) with offer for participant '${participant}'.`);
+}
 
 function addNegotiator() {
     unsub = onSnapshot(connectionsRef, (snapshot) => {
@@ -354,6 +425,59 @@ function addNegotiator() {
 
 /**
  * @param {String} participant 
+ * @param {RTCPeerConnection} peerConnection 
+ */
+function registerPeerConnectionListeners(participant, peerConnection) {
+    peerConnection.ontrack = ({ track, streams }) => {
+        console.log(`Got ${streams.length} streams from participant '${participant}'.`);
+
+        remoteStreamQueue.push(...streams);
+
+        processRemoteStreamQueues(participant);
+    };
+
+    peerConnection.onnegotiationneeded = (event) => {
+        console.log(`Negotiation needed for participant '${participant}'.`);
+
+        // Create new offers to connected participants
+        if(peerConnection.connectionState === 'connected') {
+            if(dataChannels[participant]) sendStreamInfo(participant);
+            renegotiateOffer(participant, peerConnection);
+        }
+    };
+
+    peerConnection.onicegatheringstatechange = (event) => {
+        console.log(`ICE gathering state change for participant '${participant}': ${peerConnection.iceGatheringState}`);
+    };
+
+    peerConnection.onconnectionstatechange = (event) => {
+        console.log(`Connection state change for participant '${participant}': ${peerConnection.connectionState}`);
+
+        if(peerConnection.connectionState === 'connected') {
+            // Add the local stream(s) tracks to the connection if they're queued
+            if(localStreamQueue.includes(participant)) {
+                console.log(`Adding '${participant}'s queued tracks to connection`);
+                processLocalStreamQueue(participant, peerConnection, localStreamQueue, get(localStream));
+            }
+
+            if(localDisplayStreamQueue.includes(participant)) {
+                console.log(`Adding '${participant}'s queued display tracks to connection`);
+                processLocalStreamQueue(participant, peerConnection, localDisplayStreamQueue, get(localDisplayStream));
+            }
+        }
+    };
+
+    peerConnection.onsignalingstatechange = (event) => {
+        console.log(`Signaling state change for '${participant}': ${peerConnection.signalingState}`);
+    };
+
+    peerConnection.oniceconnectionstatechange = (event) => {
+        console.log(`ICE connection state change for participant '${participant}': ${peerConnection.iceConnectionState}`);
+    };
+}
+
+/**
+ * @param {String} participant 
  * @param {RTCDataChannel} dataChannel 
  */
 function registerDataChannelListeners(participant, dataChannel) {
@@ -362,7 +486,7 @@ function registerDataChannelListeners(participant, dataChannel) {
 
         const message = {
             type: 'info',
-            category: 'connection:established',
+            category: 'connection-established',
             user: localUid,
             username: get(username),
             content: `Connected to ${get(username)}`
@@ -370,7 +494,7 @@ function registerDataChannelListeners(participant, dataChannel) {
 
         dataChannel.send(JSON.stringify(message));
 
-        //// TODO: Send stream info?
+        sendStreamInfo(participant);
 
         if(!get(sendEnabled)) sendEnabled.set(true);
     };
@@ -396,8 +520,16 @@ function registerDataChannelListeners(participant, dataChannel) {
         const message = JSON.parse(event.data);
         console.log(`Message received from participant '${participant}':`, message);
 
-        if(message.type === 'info' && message.category === 'connection:established') {
-            participantNames[participant] = message.username;
+        switch(message.type) {
+            case 'info':
+                if(message.category === 'connection-established') {
+                    participantNames[participant] = message.username;
+                }
+                break;
+
+            case 'system':
+                processSystemMsg(participant, message);
+                break;
         }
 
         messages.set([...get(messages), message]);
@@ -408,52 +540,6 @@ function registerDataChannelListeners(participant, dataChannel) {
         const { error } = event;
         console.warn(`Data channel error for participant '${participant}'.`, error);
     };
-}
-
-/**
- * @param {String} content 
- */
-export function sendMessage(content) {
-    const message = {
-        type: 'message',
-        user: localUid,
-        username: get(username),
-        content
-    };
-
-    // Send message to all data channels
-    for(const participant in dataChannels) {
-        const dataChannel = dataChannels[participant];
-        dataChannel.send(JSON.stringify(message));
-    }
-
-    messages.set([...get(messages), message]);
-}
-
-/** 
- * @param {String} participant 
- */
-function onParticipantDisconnected(participant) {
-    // Unsubscribe from the participant's candidate collection
-    const candUnsub = candidateUnsubs[participant];
-    if(candUnsub) candUnsub();
-
-    delete candidateUnsubs[participant];
-    delete connectionDocRefs[participant];
-    delete offerTimes[participant];
-    delete answerTimes[participant];
-
-    delete peerConnections[participant];
-    delete dataChannels[participant];
-
-    const message = {
-        type: 'info',
-        content: `Disconnected from ${participantNames[participant]}`
-    };
-
-    messages.set([...get(messages), message]);
-
-    delete participantNames[participant];
 }
 
 /**
@@ -496,4 +582,233 @@ function collectIceCandidates(connectionDocRef, participant, peerConnection) {
     });
 
     candidateUnsubs[participant] = unsub;
+}
+
+/**
+ * @param {String} content 
+ */
+export function sendMessage(content) {
+    const message = {
+        type: 'message',
+        user: localUid,
+        username: get(username),
+        content
+    };
+
+    // Send message to all data channels
+    for(const participant in dataChannels) {
+        const dataChannel = dataChannels[participant];
+        dataChannel.send(JSON.stringify(message));
+    }
+
+    messages.set([...get(messages), message]);
+}
+
+/**
+ * @param {String} participant 
+ */
+function sendStreamInfo(participant) {
+    if(!dataChannels[participant]) {
+        console.error(`No data channel to send stream info to participant '${participant}'.`, dataChannels);
+        return;
+    }
+
+    const messages = [];
+
+    if(get(localStream)) {
+        const message = {
+            type: 'system',
+            category: 'stream-info',
+            streamId: get(localStream).id,
+            streamType: 'media',
+            username: get(username)
+        };
+
+        messages.push(message);
+    }
+
+    if(get(localDisplayStream)) {
+        const message = {
+            type: 'system',
+            category: 'stream-info',
+            streamId: get(localDisplayStream).id,
+            streamType: 'display',
+            username: get(username)
+        };
+
+        messages.push(message);
+    }
+
+    // Send the stream info(s) to the participant
+    const dataChannel = dataChannels[participant];
+    messages.forEach(message => dataChannel.send(JSON.stringify(message)));
+}
+
+/**
+ * @param {String} participant 
+ * @param {*} message 
+ */
+function processSystemMsg(participant, message) {
+    switch(message.category) {
+        case 'refresh-stream':
+            removeRemoteStream(participant);
+            break;
+
+        case 'stream-info':
+            const streamInfo = {
+                username: message.username,
+                streamType: message.streamType,
+                streamId: message.streamId
+            };
+
+            remoteStreamInfos.push(streamInfo);
+            processRemoteStreamQueues(participant);
+            break;
+
+        default:
+            console.error(participant, 'Invalid system message', message);
+    }
+}
+
+async function startStream() {
+    const stream = await navigator.mediaDevices.getUserMedia(get(streamConstraints));
+    localStream.set(stream);
+}
+
+async function startDisplayStream() {
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+    localDisplayStream.set(stream);
+}
+
+async function refreshStream() {
+    const message = {
+        type: 'system',
+        category: 'refresh-stream'
+    };
+
+    // Signal connected participants to remove the current stream
+    for(const participant in dataChannels) {
+        const dataChannel = dataChannels[participant];
+        dataChannel.send(JSON.stringify(message));
+    }
+
+    // Stop the stream locally, then create a new one
+    stopStream();
+    await startStream();
+
+    // Add the new stream's tracks to the connection(s)
+    get(localStream).getTracks().forEach(track => {
+        for(const participant in peerConnections) {
+            peerConnections[participant].addTrack(track, get(localStream));
+        }
+    });
+}
+
+function stopStream() {
+    get(localStream).getTracks().forEach(track => track.stop());
+    localStream.set(null);
+}
+
+function stopDisplayStream() {
+    get(localDisplayStream).getTracks().forEach(track => track.stop());
+    localDisplayStream.set(null);
+}
+
+function processLocalStreamQueue(participant, peerConnection, streamQueue, stream) {
+    stream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, stream);
+    });
+
+    // Remove the participant from the stream queue
+    const pos = streamQueue.indexOf(participant);
+    streamQueue.splice(pos, 1);
+}
+
+function processRemoteStreamQueues(participant) {
+    // Filter out inactive streams
+    remoteStreamQueue = remoteStreamQueue.filter(stream => stream.active);
+
+    // Check if there's matching stream info
+    remoteStreamQueue.forEach(stream => {
+        const streamInfo = remoteStreamInfos.find(info => info.streamId === stream.id);
+        
+        if(streamInfo) {
+            const remoteStream = { username: streamInfo.username, streamType: streamInfo.streamType, stream};
+            addRemoteStream(participant, remoteStream);
+        }
+    });
+
+    // Clean up the queues
+    for(const particip in get(remoteStreams)) {
+        const rStreams = get(remoteStreams)[particip];
+
+        rStreams.forEach(rStream => {
+            remoteStreamQueue = remoteStreamQueue.filter(stream => stream.id !== rStream.stream.id);
+            remoteStreamInfos = remoteStreamInfos.filter(info => info.streamId !== rStream.stream.id);
+        });
+    }
+}
+
+function addRemoteStream(participant, remoteStream) {
+    console.log(`Creating new remote stream for participant '${participant}'.`, remoteStream);
+
+    if(!remoteStreams[participant]) {
+        const streams = {};
+        streams[participant] = [remoteStream];
+
+        remoteStreams.set(streams);
+    }else{
+        // Filter out any duplicates
+        const streams = get(remoteStreams)[participant].filter(rStream => rStream.stream.id !== remoteStream.stream.id);
+
+        streams[participant].push(remoteStream); // Store the remote stream
+
+        remoteStreams.set(streams);
+    }
+}
+
+function removeRemoteStream(participant) {
+    if(!get(remoteStreams)[participant]) {
+        console.warn(`No remote streams found for participant '${participant}'. Unable to remove.`);
+        return;
+    }
+
+    const streams = get(remoteStreams);
+
+    streams[participant].forEach(remoteStream => {
+        remoteStream.stream.getTracks().forEach(track => track.stop());
+        remoteStream.stream = null;
+    });
+
+    delete streams[participant];
+
+    remoteStreams.set(streams);
+}
+
+/** 
+ * @param {String} participant 
+ */
+function onParticipantDisconnected(participant) {
+    removeRemoteStream(participant);
+
+    // Unsubscribe from the participant's candidate collection
+    const candUnsub = candidateUnsubs[participant];
+    if(candUnsub) candUnsub();
+
+    delete candidateUnsubs[participant];
+    delete connectionDocRefs[participant];
+    delete offerTimes[participant];
+    delete answerTimes[participant];
+
+    delete peerConnections[participant];
+    delete dataChannels[participant];
+
+    const message = {
+        type: 'info',
+        content: `Disconnected from ${participantNames[participant]}`
+    };
+
+    messages.set([...get(messages), message]);
+
+    delete participantNames[participant];
 }

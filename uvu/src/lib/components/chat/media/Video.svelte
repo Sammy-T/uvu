@@ -1,6 +1,18 @@
+<script>
+    import { onMount } from 'svelte';
+
+    export let mediaItem;
+
+    let video;
+
+    onMount(() => {
+        video.srcObject = mediaItem.stream;
+    });
+</script>
+
 <div class="video-container">
     <!-- svelte-ignore a11y-media-has-caption -->
-    <video controls />
+    <video controls autoplay muted bind:this={video} />
 </div>
 
 <style>

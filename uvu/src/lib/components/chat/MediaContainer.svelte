@@ -1,10 +1,29 @@
 <script>
     import Video from './media/Video.svelte';
+    import { localDisplayStream, localStream, remoteStreams } from '$lib/stores';
+
+    let media = [];
+
+    $: updateMedia([$localStream, $localDisplayStream, $remoteStreams]);
+
+    function updateMedia(placeholder) {
+        const m = [];
+
+        if($localStream) m.push({ stream: $localStream });
+        if($localDisplayStream) m.push({ stream: $localDisplayStream });
+
+        for(const participant in $remoteStreams) {
+            const streams = $remoteStreams[participant];
+            m.push(...streams);
+        }
+
+        media = m;
+    }
 </script>
 
 <div id="media-container">
-    {#each Array(1) as _, index (index)}
-        <Video />
+    {#each media as item, index (index)}
+        <Video mediaItem={item} />
     {/each}
 </div>
 
