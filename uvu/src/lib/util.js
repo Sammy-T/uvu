@@ -56,8 +56,8 @@ export async function createRoom() {
     try {
         const constraints = get(streamConstraints);
 
-        if(constraints.audio || constraints.video) await startStream();
-        if(get(screenShareEnabled)) await startDisplayStream();
+        // if(constraints.audio || constraints.video) await startStream();
+        // if(get(screenShareEnabled)) await startDisplayStream();
         
         const roomData = {
             participants: [localUid],
@@ -92,8 +92,8 @@ export async function joinRoom() {
     
         const constraints = get(streamConstraints);
 
-        if(constraints.audio || constraints.video) await startStream();
-        if(get(screenShareEnabled)) await startDisplayStream();
+        // if(constraints.audio || constraints.video) await startStream();
+        // if(get(screenShareEnabled)) await startDisplayStream();
     
         // Retrieve the room data
         const roomData = snapshot.data();
@@ -441,7 +441,6 @@ function registerPeerConnectionListeners(participant, peerConnection) {
 
         // Create new offers to connected participants
         if(peerConnection.connectionState === 'connected') {
-            if(dataChannels[participant]) sendStreamInfo(participant);
             renegotiateOffer(participant, peerConnection);
         }
     };
@@ -451,19 +450,23 @@ function registerPeerConnectionListeners(participant, peerConnection) {
     };
 
     peerConnection.onconnectionstatechange = (event) => {
-        console.log(`Connection state change for participant '${participant}': ${peerConnection.connectionState}`);
+        try{
+            console.log(`Connection state change for participant '${participant}': ${peerConnection.connectionState}`);
 
-        if(peerConnection.connectionState === 'connected') {
-            // Add the local stream(s) tracks to the connection if they're queued
-            if(localStreamQueue.includes(participant)) {
-                console.log(`Adding '${participant}'s queued tracks to connection`);
-                processLocalStreamQueue(participant, peerConnection, localStreamQueue, get(localStream));
-            }
+            if(peerConnection.connectionState === 'connected') {
+                // Add the local stream(s) tracks to the connection if they're queued
+                if(localStreamQueue.includes(participant)) {
+                    console.log(`Adding '${participant}'s queued tracks to connection`);
+                    processLocalStreamQueue(participant, peerConnection, localStreamQueue, get(localStream));
+                }
 
-            if(localDisplayStreamQueue.includes(participant)) {
-                console.log(`Adding '${participant}'s queued display tracks to connection`);
-                processLocalStreamQueue(participant, peerConnection, localDisplayStreamQueue, get(localDisplayStream));
+                if(localDisplayStreamQueue.includes(participant)) {
+                    console.log(`Adding '${participant}'s queued display tracks to connection`);
+                    processLocalStreamQueue(participant, peerConnection, localDisplayStreamQueue, get(localDisplayStream));
+                }
             }
+        } catch(error) {
+            console.warn(error);
         }
     };
 
@@ -494,7 +497,8 @@ function registerDataChannelListeners(participant, dataChannel) {
 
         dataChannel.send(JSON.stringify(message));
 
-        sendStreamInfo(participant);
+        sendStreamInfo(participant, 'media', localStream);
+        sendStreamInfo(participant, 'display', localDisplayStream);
 
         if(!get(sendEnabled)) sendEnabled.set(true);
     };
@@ -606,42 +610,34 @@ export function sendMessage(content) {
 
 /**
  * @param {String} participant 
+ * @param {String} streamType - 'media' / 'display'
+ * @param {import('svelte/store').Writable} streamStore 
  */
-function sendStreamInfo(participant) {
+function sendStreamInfo(participant, streamType, streamStore) {
     if(!dataChannels[participant]) {
-        console.error(`No data channel to send stream info to participant '${participant}'.`, dataChannels);
+        console.warn(`No data channel to send stream info to participant '${participant}'.`, dataChannels);
         return;
     }
 
-    const messages = [];
+    if(!get(streamStore)) return;
 
-    if(get(localStream)) {
-        const message = {
-            type: 'system',
-            category: 'stream-info',
-            streamId: get(localStream).id,
-            streamType: 'media',
-            username: get(username)
-        };
+    const peerConnection = peerConnections[participant];
 
-        messages.push(message);
-    }
+    get(streamStore).getTracks().forEach(track => {
+        peerConnection.addTrack(track, get(streamStore));
+    });
 
-    if(get(localDisplayStream)) {
-        const message = {
-            type: 'system',
-            category: 'stream-info',
-            streamId: get(localDisplayStream).id,
-            streamType: 'display',
-            username: get(username)
-        };
-
-        messages.push(message);
-    }
+    const message = {
+        type: 'system',
+        category: 'stream-info',
+        streamId: get(streamStore).id,
+        streamType,
+        username: get(username)
+    };
 
     // Send the stream info(s) to the participant
     const dataChannel = dataChannels[participant];
-    messages.forEach(message => dataChannel.send(JSON.stringify(message)));
+    dataChannel.send(JSON.stringify(message));
 }
 
 /**
@@ -678,14 +674,26 @@ function processSystemMsg(participant, message) {
     }
 }
 
-async function startStream() {
+export async function startStream() {
+    if(get(localStream)) return;
+
     const stream = await navigator.mediaDevices.getUserMedia(get(streamConstraints));
     localStream.set(stream);
+
+    for(const participant in dataChannels) {
+        sendStreamInfo(participant, 'media', localStream);
+    }
 }
 
-async function startDisplayStream() {
+export async function startDisplayStream() {
+    if(get(localDisplayStream)) return;
+    
     const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
     localDisplayStream.set(stream);
+
+    for(const participant in dataChannels) {
+        sendStreamInfo(participant, 'display', localDisplayStream);
+    }
 }
 
 async function refreshStream() {
@@ -717,7 +725,7 @@ async function refreshStream() {
  */
 export function stopStream(streamStore) {
     if(!get(streamStore)) return;
-    
+
     const message = {
         type: 'system',
         category: 'remove-stream',

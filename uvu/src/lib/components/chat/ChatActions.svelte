@@ -11,7 +11,7 @@
     import more from '$lib/assets/more-vertical.svg?raw';
     import RoomIdModal from './modal/RoomIdModal.svelte';
     import { inRoom, localDisplayStream, screenShareEnabled, streamConstraints, username } from '$lib/stores';
-    import { createRoom, exitRoom, stopStream } from '$lib/util';
+    import { createRoom, exitRoom, startDisplayStream, stopStream } from '$lib/util';
     import { writable } from 'svelte/store';
     import { setContext } from 'svelte';
 
@@ -32,10 +32,12 @@
         $streamConstraints = constraints;
     }
 
-    function toggleScreenShare() {
+    async function toggleScreenShare() {
         $screenShareEnabled = !$screenShareEnabled;
 
-        if(!$screenShareEnabled) {
+        if($screenShareEnabled) {
+            await startDisplayStream();
+        } else {
             stopStream(localDisplayStream);
         }
     }
