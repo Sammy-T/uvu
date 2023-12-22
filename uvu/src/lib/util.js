@@ -135,8 +135,8 @@ export async function exitRoom() {
     try {
         if(!roomRef) throw new Error('Missing room ref.');
 
-        if(get(localStream)) stopStream();
-        if(get(localDisplayStream)) stopDisplayStream();
+        if(get(localStream)) stopStream(localStream);
+        if(get(localDisplayStream)) stopStream(localDisplayStream);
 
         for(const participant in get(remoteStreams)) {
             removeRemoteStream(participant);
@@ -653,6 +653,14 @@ function processSystemMsg(participant, message) {
         case 'refresh-stream':
             removeRemoteStream(participant);
             break;
+        
+        case 'remove-stream':
+            const streams = get(remoteStreams);
+            const participantStreams = streams[participant];
+            streams[participant] = participantStreams.filter(s => s.stream.id !== message.streamId);
+
+            remoteStreams.set(streams);
+            break;
 
         case 'stream-info':
             const streamInfo = {
@@ -693,7 +701,7 @@ async function refreshStream() {
     }
 
     // Stop the stream locally, then create a new one
-    stopStream();
+    stopStream(localStream);
     await startStream();
 
     // Add the new stream's tracks to the connection(s)
@@ -704,14 +712,26 @@ async function refreshStream() {
     });
 }
 
-function stopStream() {
-    get(localStream).getTracks().forEach(track => track.stop());
-    localStream.set(null);
-}
+/**
+ * @param {import('svelte/store').Writable} streamStore 
+ */
+export function stopStream(streamStore) {
+    if(!get(streamStore)) return;
+    
+    const message = {
+        type: 'system',
+        category: 'remove-stream',
+        streamId: get(streamStore).id
+    };
 
-function stopDisplayStream() {
-    get(localDisplayStream).getTracks().forEach(track => track.stop());
-    localDisplayStream.set(null);
+    get(streamStore).getTracks().forEach(track => track.stop());
+    streamStore.set(null);
+
+    // Signal connected participants to remove the specified stream
+    for(const participant in dataChannels) {
+        const dataChannel = dataChannels[participant];
+        dataChannel.send(JSON.stringify(message));
+    }
 }
 
 function processLocalStreamQueue(participant, peerConnection, streamQueue, stream) {
@@ -733,7 +753,12 @@ function processRemoteStreamQueues(participant) {
         const streamInfo = remoteStreamInfos.find(info => info.streamId === stream.id);
         
         if(streamInfo) {
-            const remoteStream = { username: streamInfo.username, streamType: streamInfo.streamType, stream};
+            const remoteStream = { 
+                username: streamInfo.username, 
+                streamType: streamInfo.streamType, 
+                stream
+            };
+
             addRemoteStream(participant, remoteStream);
         }
     });
@@ -750,7 +775,7 @@ function processRemoteStreamQueues(participant) {
 }
 
 function addRemoteStream(participant, remoteStream) {
-    console.log(`Creating new remote stream for participant '${participant}'.`, remoteStream);
+    console.log(`Creating remote stream for participant '${participant}'.`, remoteStream);
 
     if(!remoteStreams[participant]) {
         const streams = {};

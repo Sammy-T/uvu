@@ -19,7 +19,7 @@
 </nav>
 
 <main id="main-container" class="container-fluid">
-    {#if $localStream || $localDisplayStream || Object.keys($remoteStreams).length > 0}
+    {#if $localStream || $localDisplayStream || Object.values($remoteStreams).some(s => s.length > 0)}
         <MediaContainer />
     {/if}
 
