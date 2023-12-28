@@ -1,6 +1,6 @@
 import { firebaseConfig } from './firebase-config';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, addDoc, collection, serverTimestamp, deleteDoc, doc, onSnapshot, Timestamp, setDoc, DocumentSnapshot, updateDoc, getDoc, arrayUnion, query, where, getDocs, writeBatch, arrayRemove } from 'firebase/firestore';
+import { getFirestore, addDoc, collection, serverTimestamp, deleteDoc, doc, onSnapshot, Timestamp, setDoc, DocumentSnapshot, updateDoc, getDoc, arrayUnion, query, where, getDocs, writeBatch, arrayRemove, or } from 'firebase/firestore';
 import { inRoom, localDisplayStream, localStream, messages, remoteStreams, roomId, screenShareEnabled, sendEnabled, streamConstraints, username } from './stores';
 import { get } from 'svelte/store';
 
@@ -194,8 +194,12 @@ export async function exitRoom() {
 }
 
 async function cleanUpDb() {
-    // Retrieve connections authored by this uid
-    const q = query(connectionsRef, where('from', '==', localUid));
+    // Retrieve connections associated with this uid
+    const q = query(connectionsRef, or(
+        where('from', '==', localUid),
+        where('to', '==', localUid)
+        ));
+    
     const snapshot = await getDocs(q);
 
     snapshot.forEach(async (document) => {
