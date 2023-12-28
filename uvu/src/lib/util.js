@@ -619,22 +619,26 @@ export function sendMessage(content) {
  */
 function sendStreamInfo(participant, streamType, streamStore) {
     if(!dataChannels[participant]) {
-        console.warn(`No data channel to send stream info to participant '${participant}'.`, dataChannels);
+        console.warn(`No data channel to send stream info to '${participant}'.`, dataChannels);
         return;
     }
 
-    if(!get(streamStore)) return;
+    const stream = get(streamStore);
+
+    if(!stream) return;
 
     const peerConnection = peerConnections[participant];
 
-    get(streamStore).getTracks().forEach(track => {
-        peerConnection.addTrack(track, get(streamStore));
-    });
+    try {
+        stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+    } catch(error) {
+        console.error(`Unable to add tracks for '${participant}'.`, error);
+    }
 
     const message = {
         type: 'system',
         category: 'stream-info',
-        streamId: get(streamStore).id,
+        streamId: stream.id,
         streamType,
         username: get(username)
     };
