@@ -10,26 +10,42 @@
     import monitorOff from '$lib/assets/monitor-off.svg?raw';
     import more from '$lib/assets/more-vertical.svg?raw';
     import RoomIdModal from './modal/RoomIdModal.svelte';
-    import { inRoom, localDisplayStream, screenShareEnabled, streamConstraints, username } from '$lib/stores';
-    import { createRoom, exitRoom, startDisplayStream, stopStream } from '$lib/util';
+    import { inRoom, localDisplayStream, localStream, screenShareEnabled, streamConstraints, username } from '$lib/stores';
+    import { createRoom, exitRoom, refreshStream, startDisplayStream, startStream, stopStream } from '$lib/util';
     import { writable } from 'svelte/store';
     import { setContext } from 'svelte';
 
     const showRoomIdModal = writable(false);
     setContext('showRoomIdModal', showRoomIdModal);
 
-    function toggleAudio() {
+    async function toggleAudio() {
         const constraints = $streamConstraints;
         constraints.audio = !constraints.audio;
 
         $streamConstraints = constraints;
+
+        if($streamConstraints.video) {
+            await refreshStream();
+        } else if($streamConstraints.audio) {
+            await startStream();
+        } else {
+            stopStream(localStream);
+        }
     }
 
-    function toggleVideo() {
+    async function toggleVideo() {
         const constraints = $streamConstraints;
         constraints.video = !constraints.video;
 
         $streamConstraints = constraints;
+
+        if($streamConstraints.audio) {
+            await refreshStream();
+        } else if($streamConstraints.video) {
+            await startStream();
+        } else {
+            stopStream(localStream);
+        }
     }
 
     async function toggleScreenShare() {

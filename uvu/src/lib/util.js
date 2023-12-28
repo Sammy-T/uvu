@@ -54,11 +54,6 @@ let remoteStreamInfos = [];
 
 export async function createRoom() {
     try {
-        const constraints = get(streamConstraints);
-
-        // if(constraints.audio || constraints.video) await startStream();
-        // if(get(screenShareEnabled)) await startDisplayStream();
-        
         const roomData = {
             participants: [localUid],
             created: serverTimestamp()
@@ -89,11 +84,6 @@ export async function joinRoom() {
         const snapshot = await getDoc(roomRef);
     
         if(!snapshot.exists()) throw new Error('Room not found.');
-    
-        const constraints = get(streamConstraints);
-
-        // if(constraints.audio || constraints.video) await startStream();
-        // if(get(screenShareEnabled)) await startDisplayStream();
     
         // Retrieve the room data
         const roomData = snapshot.data();
@@ -134,9 +124,6 @@ export async function joinRoom() {
 export async function exitRoom() {
     try {
         if(!roomRef) throw new Error('Missing room ref.');
-
-        if(get(localStream)) stopStream(localStream);
-        if(get(localDisplayStream)) stopStream(localDisplayStream);
 
         for(const participant in get(remoteStreams)) {
             removeRemoteStream(participant);
@@ -704,7 +691,7 @@ export async function startDisplayStream() {
     }
 }
 
-async function refreshStream() {
+export async function refreshStream() {
     const message = {
         type: 'system',
         category: 'refresh-stream'
