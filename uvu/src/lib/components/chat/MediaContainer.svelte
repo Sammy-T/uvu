@@ -22,7 +22,7 @@
 </script>
 
 <div id="media-container">
-    {#each media as item, index (index)}
+    {#each media as item (item.stream.id)}
         <Video mediaItem={item} />
     {/each}
 </div>
