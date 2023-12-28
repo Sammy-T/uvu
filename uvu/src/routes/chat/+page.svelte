@@ -37,14 +37,24 @@
         width: 100%;
         padding: 0 var(--spacing);
         align-items: center;
-        flex-wrap: wrap;
     }
 
     #main-container {
         min-height: 100vh;
         padding: 0;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
+    }
+
+    @media (min-width: 720px) {
+        nav {
+            flex-wrap: wrap;
+        }
+        
+        #main-container {
+            flex-direction: row;
+        }
     }
 </style>

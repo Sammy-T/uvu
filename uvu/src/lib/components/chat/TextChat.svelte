@@ -113,4 +113,11 @@
         padding: calc(var(--spacing) * 0.5) calc(var(--spacing) * 1.25);
         font-size: calc(var(--font-size) * 0.75);
     }
+
+    @media (max-width: 720px) {
+        /* TODO: I'd rather do this the other way around but it'll do for now. */
+        #chat-area {
+            order: -1;
+        }
+    }
 </style>
