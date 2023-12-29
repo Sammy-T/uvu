@@ -1,8 +1,11 @@
 <script>
     import Video from './media/Video.svelte';
     import { localDisplayStream, localStream, remoteStreams } from '$lib/stores';
+    import { writable } from 'svelte/store';
+    import { setContext } from 'svelte';
 
-    let media = [];
+    const media = writable([]);
+    setContext('media', media);
 
     $: updateMedia([$localStream, $localDisplayStream, $remoteStreams]);
 
@@ -17,12 +20,12 @@
             m.push(...streams);
         }
 
-        media = m;
+        $media = m;
     }
 </script>
 
 <div id="media-container">
-    {#each media as item (item.stream.id)}
+    {#each $media as item (item.stream.id)}
         <Video mediaItem={item} />
     {/each}
 </div>
