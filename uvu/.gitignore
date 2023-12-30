@@ -11,3 +11,6 @@ vite.config.ts.timestamp-*
 
 # Firebase config
 firebase-config.js
+
+# Analytics
+Analytics.svelte
