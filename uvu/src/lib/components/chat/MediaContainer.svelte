@@ -12,21 +12,19 @@
     function updateMedia(placeholder) {
         const m = [];
 
-        if($localStream) m.push({ stream: $localStream });
-        if($localDisplayStream) m.push({ stream: $localDisplayStream });
+        if($localStream) m.push($localStream);
+        if($localDisplayStream) m.push($localDisplayStream);
 
-        for(const participant in $remoteStreams) {
-            const streams = $remoteStreams[participant];
-            m.push(...streams);
-        }
+        m.push(...$remoteStreams);
+        console.log('media', m);
 
         $media = m;
     }
 </script>
 
 <div id="media-container">
-    {#each $media as item (item.stream.id)}
-        <Video mediaItem={item} />
+    {#each $media as stream (stream.id)}
+        <Video mediaItem={stream} />
     {/each}
 </div>
 

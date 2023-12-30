@@ -8,7 +8,7 @@
     let video;
 
     onMount(() => {
-        video.srcObject = mediaItem.stream;
+        video.srcObject = mediaItem;
     });
 </script>
 

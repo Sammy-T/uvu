@@ -1,7 +1,7 @@
 import { firebaseConfig } from './firebase-config';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, addDoc, collection, serverTimestamp, deleteDoc, doc, onSnapshot, Timestamp, setDoc, DocumentSnapshot, updateDoc, getDoc, arrayUnion, query, where, getDocs, writeBatch, arrayRemove, or } from 'firebase/firestore';
-import { inRoom, localDisplayStream, localStream, messages, remoteStreams, roomId, screenShareEnabled, sendEnabled, streamConstraints, username } from './stores';
+import { inRoom, localDisplayStream, localStream, messages, remoteStreamInfos, remoteStreams, roomId, screenShareEnabled, sendEnabled, streamConstraints, username } from './stores';
 import { get } from 'svelte/store';
 
 const app = initializeApp(firebaseConfig);
@@ -49,8 +49,6 @@ const participantNames = {};
 
 const localStreamQueue = [];
 const localDisplayStreamQueue = [];
-let remoteStreamQueue = [];
-let remoteStreamInfos = [];
 
 export async function createRoom() {
     try {
@@ -125,9 +123,8 @@ export async function exitRoom() {
     try {
         if(!roomRef) throw new Error('Missing room ref.');
 
-        for(const participant in get(remoteStreams)) {
-            removeRemoteStream(participant);
-        }
+        remoteStreams.set([]);
+        remoteStreamInfos.set([]);
 
         // Unsubscribe from db listeners
         if(unsub) {
@@ -422,9 +419,14 @@ function registerPeerConnectionListeners(participant, peerConnection) {
     peerConnection.ontrack = ({ track, streams }) => {
         console.log(`Got ${streams.length} streams from participant '${participant}'.`);
 
-        remoteStreamQueue.push(...streams);
+        const rStreams = get(remoteStreams);
 
-        processRemoteStreamQueues(participant);
+        streams.forEach(stream => {
+            const includes = rStreams.some(s => s.id === stream.id);
+            if(!includes) rStreams.push(stream);
+        });
+
+        remoteStreams.set(rStreams);
     };
 
     peerConnection.onnegotiationneeded = (event) => {
@@ -611,22 +613,14 @@ function sendStreamInfo(participant, streamType, streamStore) {
     }
 
     const stream = get(streamStore);
-
     if(!stream) return;
-
-    const peerConnection = peerConnections[participant];
-
-    try {
-        stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
-    } catch(error) {
-        console.error(`Unable to add tracks for '${participant}'.`, error);
-    }
 
     const message = {
         type: 'system',
         category: 'stream-info',
         streamId: stream.id,
         streamType,
+        user: localUid,
         username: get(username)
     };
 
@@ -640,28 +634,29 @@ function sendStreamInfo(participant, streamType, streamStore) {
  * @param {*} message 
  */
 function processSystemMsg(participant, message) {
-    switch(message.category) {
-        case 'refresh-stream':
-            removeRemoteStream(participant);
-            break;
-        
-        case 'remove-stream':
-            const streams = get(remoteStreams);
-            const participantStreams = streams[participant];
-            streams[participant] = participantStreams.filter(s => s.stream.id !== message.streamId);
+    const infos = get(remoteStreamInfos);
+    const rStreams = get(remoteStreams);
 
-            remoteStreams.set(streams);
+    switch(message.category) {
+        case 'remove-stream':
+            remoteStreams.set(rStreams.filter(s => s.id !== message.streamId));
+            remoteStreamInfos.set(infos.filter(i => i.streamId !== message.streamId));
             break;
 
         case 'stream-info':
             const streamInfo = {
+                user: message.user,
                 username: message.username,
                 streamType: message.streamType,
                 streamId: message.streamId
             };
 
-            remoteStreamInfos.push(streamInfo);
-            processRemoteStreamQueues(participant);
+            const includes = infos.some(info => info.streamId === streamInfo.streamId);
+
+            if(!includes) {
+                infos.push(streamInfo);
+                remoteStreamInfos.set(infos);
+            }
             break;
 
         default:
@@ -677,6 +672,9 @@ export async function startStream() {
 
     for(const participant in dataChannels) {
         sendStreamInfo(participant, 'media', localStream);
+
+        const peerConnection = peerConnections[participant];
+        stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
 }
 
@@ -688,21 +686,13 @@ export async function startDisplayStream() {
 
     for(const participant in dataChannels) {
         sendStreamInfo(participant, 'display', localDisplayStream);
+
+        const peerConnection = peerConnections[participant];
+        stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
     }
 }
 
 export async function refreshStream() {
-    const message = {
-        type: 'system',
-        category: 'refresh-stream'
-    };
-
-    // Signal connected participants to remove the current stream
-    for(const participant in dataChannels) {
-        const dataChannel = dataChannels[participant];
-        dataChannel.send(JSON.stringify(message));
-    }
-
     // Stop the stream locally, then create a new one
     stopStream(localStream);
     await startStream();
@@ -710,7 +700,11 @@ export async function refreshStream() {
     // Add the new stream's tracks to the connection(s)
     get(localStream).getTracks().forEach(track => {
         for(const participant in peerConnections) {
-            peerConnections[participant].addTrack(track, get(localStream));
+            try {
+                peerConnections[participant].addTrack(track, get(localStream));
+            } catch(error) {
+                console.warn('Unable to add tracks', error);
+            }
         }
     });
 }
@@ -747,70 +741,22 @@ function processLocalStreamQueue(participant, peerConnection, streamQueue, strea
     streamQueue.splice(pos, 1);
 }
 
-function processRemoteStreamQueues(participant) {
-    // Filter out inactive streams
-    remoteStreamQueue = remoteStreamQueue.filter(stream => stream.active);
-
-    // Check if there's matching stream info
-    remoteStreamQueue.forEach(stream => {
-        const streamInfo = remoteStreamInfos.find(info => info.streamId === stream.id);
-        
-        if(streamInfo) {
-            const remoteStream = { 
-                username: streamInfo.username, 
-                streamType: streamInfo.streamType, 
-                stream
-            };
-
-            addRemoteStream(participant, remoteStream);
-        }
-    });
-
-    // Clean up the queues
-    for(const particip in get(remoteStreams)) {
-        const rStreams = get(remoteStreams)[particip];
-
-        rStreams.forEach(rStream => {
-            remoteStreamQueue = remoteStreamQueue.filter(stream => stream.id !== rStream.stream.id);
-            remoteStreamInfos = remoteStreamInfos.filter(info => info.streamId !== rStream.stream.id);
-        });
-    }
-}
-
-function addRemoteStream(participant, remoteStream) {
-    console.log(`Creating remote stream for participant '${participant}'.`, remoteStream);
-
-    if(!remoteStreams[participant]) {
-        const streams = {};
-        streams[participant] = [remoteStream];
-
-        remoteStreams.set(streams);
-    }else{
-        // Filter out any duplicates
-        const streams = get(remoteStreams)[participant].filter(rStream => rStream.stream.id !== remoteStream.stream.id);
-
-        streams[participant].push(remoteStream); // Store the remote stream
-
-        remoteStreams.set(streams);
-    }
-}
-
 function removeRemoteStream(participant) {
-    if(!get(remoteStreams)[participant]) {
-        console.warn(`No remote streams found for participant '${participant}'. Unable to remove.`);
-        return;
-    }
+    const streamInfos = get(remoteStreamInfos);
+    const rInfos = streamInfos.filter(info => info.user === participant);
 
     const streams = get(remoteStreams);
 
-    streams[participant].forEach(remoteStream => {
-        remoteStream.stream.getTracks().forEach(track => track.stop());
-        remoteStream.stream = null;
+    const rStreams = streams.filter(stream => {
+        const includes = rInfos.some(i => i.streamId === stream.id);
+        
+        if(includes) stream.getTracks().forEach(track => track.stop());
+
+        return !includes;
     });
 
-    delete streams[participant];
-
-    remoteStreams.set(streams);
+    remoteStreams.set(rStreams);
+    remoteStreamInfos.set(streamInfos.filter(info => info.user !== participant));
 }
 
 /** 
