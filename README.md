@@ -14,11 +14,17 @@ npm install
 ```
 
 ### Development
-Start the Firebase Emulator dev server:
+Start the dev server:
 ```bash
 npm run dev
 ```
-Then, navigate to http://localhost:5000 to preview the website. The browser window must be refreshed to display content changes when running the Firebase Emulator.  
+Then, navigate to http://localhost:5173 to preview the website.
+
+Start the Firebase Emulator dev server:
+```bash
+npm run dev:firebase
+```
+Then, navigate to http://localhost:5000 to preview the website.
 
 ### Deploying
 Build to the `dist` directory and deploy the built files:

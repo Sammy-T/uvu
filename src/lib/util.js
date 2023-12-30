@@ -1,6 +1,6 @@
 import { firebaseConfig } from './firebase-config';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, addDoc, collection, serverTimestamp, deleteDoc, doc, onSnapshot, Timestamp, setDoc, DocumentSnapshot, updateDoc, getDoc, arrayUnion, query, where, getDocs, writeBatch, arrayRemove, or } from 'firebase/firestore';
+import { getFirestore, addDoc, collection, serverTimestamp, deleteDoc, doc, onSnapshot, Timestamp, setDoc, updateDoc, getDoc, arrayUnion, query, where, getDocs, writeBatch, arrayRemove, or } from 'firebase/firestore';
 import { inRoom, localDisplayStream, localStream, messages, remoteStreamInfos, remoteStreams, roomId, screenShareEnabled, sendEnabled, streamConstraints, username } from './stores';
 import { get } from 'svelte/store';
 
@@ -287,7 +287,7 @@ async function createOffer(participant) {
 /**
  * 
  * @param {String} participant 
- * @param {DocumentSnapshot} connectionDoc 
+ * @param {import('firebase/firestore').DocumentSnapshot} connectionDoc 
  */
 async function createAnswer(participant, connectionDoc) {
     let peerConnection;
