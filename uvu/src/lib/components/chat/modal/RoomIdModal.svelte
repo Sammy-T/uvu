@@ -19,19 +19,30 @@
         }
     }
 
+    /**
+     * @param {Event} event
+     */
+    function cancel(event) {
+        if(event.currentTarget !== event.target) return;
+
+        closeModal();
+    }
+
     function closeModal() {
         $showRoomIdModal = false;
     }
 </script>
 
-<dialog open>
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<dialog open on:click={cancel}>
     <article>
         <form id="roomIdForm" on:submit|preventDefault={setRoomId}>
             <input type="text" name="room" autocomplete="off" placeholder="Room ID" bind:value={id} required>
         </form>
 
         <footer>
-            <button class="secondary" on:click={closeModal}>Cancel</button>
+            <button class="secondary" on:click={cancel}>Cancel</button>
             <button type="submit" form="roomIdForm">Join</button>
         </footer>
     </article>
