@@ -133,7 +133,8 @@
                 {/if}
             </a>
         </li>
-        <li><a href="#options">{@html more}</a></li>
+        <!-- TODO: Device selection -->
+        <li><a href="#options" on:click|preventDefault>{@html more}</a></li>
     </ul>
 </nav>
 
