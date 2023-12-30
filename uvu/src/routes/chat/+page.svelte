@@ -5,7 +5,18 @@
     import UsernameInput from '$lib/components/chat/UsernameInput.svelte';
     import TextChat from '$lib/components/chat/TextChat.svelte';
     import MediaContainer from '$lib/components/chat/MediaContainer.svelte';
-    import { localDisplayStream, localStream, remoteStreams, username } from '$lib/stores';
+    import { localDisplayStream, localStream, remoteStreams, roomId, username } from '$lib/stores';
+
+    $: updateHash([$roomId]);
+
+    function updateHash(placeholder) {
+        if(!$roomId) return;
+
+        const params = new URLSearchParams(window.location.hash.replace('#', ''));
+        params.set('room', $roomId);
+
+        window.location.hash = params.toString();
+    }
 </script>
 
 <nav>

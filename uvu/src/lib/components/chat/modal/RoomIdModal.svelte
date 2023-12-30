@@ -5,7 +5,7 @@
 
     const showRoomIdModal = getContext('showRoomIdModal');
 
-    let id = $roomId;
+    let id = new URLSearchParams(window.location.hash.replace('#', '')).get('room');
 
     async function setRoomId() {
         $roomId = id;
