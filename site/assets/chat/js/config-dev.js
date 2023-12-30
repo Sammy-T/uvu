@@ -1,1 +1,0 @@
-const dbRoot = 'pearmo-test';
