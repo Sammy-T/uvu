@@ -10,6 +10,7 @@
     import monitorOff from '$lib/assets/monitor-off.svg?raw';
     import more from '$lib/assets/more-vertical.svg?raw';
     import RoomIdModal from './modal/RoomIdModal.svelte';
+    import ShareModal from './modal/ShareModal.svelte';
     import { inRoom, localDisplayStream, localStream, screenShareEnabled, streamConstraints, username } from '$lib/stores';
     import { createRoom, exitRoom, refreshStream, startDisplayStream, startStream, stopStream } from '$lib/util';
     import { writable } from 'svelte/store';
@@ -17,6 +18,9 @@
 
     const showRoomIdModal = writable(false);
     setContext('showRoomIdModal', showRoomIdModal);
+
+    const showShareModal = writable(false);
+    setContext('showShareModal', showShareModal);
 
     async function toggleAudio() {
         const constraints = $streamConstraints;
@@ -68,10 +72,14 @@
         }
     }
 
-    async function handleShowRoomIdModal() {
+    function handleShowRoomIdModal() {
         if(!$username) return;
         
         $showRoomIdModal = true;
+    }
+
+    function handleShowShareModal() {
+        $showShareModal = true;
     }
 
     async function handleHangUp() {
@@ -90,7 +98,8 @@
             <li><a href="#create" on:click|preventDefault={handleCreate}>Create</a></li>
             <li><a href="#join" on:click|preventDefault={handleShowRoomIdModal}>Join</a></li>
         {:else}
-            <li><a href="#share" data-tooltip="Share Room" data-placement="bottom">{@html phoneShare}</a></li>
+            <li><a href="#share" data-tooltip="Share Room" data-placement="bottom" 
+                on:click|preventDefault={handleShowShareModal}>{@html phoneShare}</a></li>
             <li><a href="#hangup" data-tooltip="Hang up" data-placement="bottom" 
                 on:click|preventDefault={handleHangUp}>{@html phoneHangUp}</a></li>
         {/if}
@@ -130,6 +139,10 @@
 
 {#if $showRoomIdModal}
     <RoomIdModal />
+{/if}
+
+{#if $showShareModal}
+    <ShareModal />
 {/if}
 
 <style>
