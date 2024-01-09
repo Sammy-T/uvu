@@ -33,5 +33,6 @@
 
     p {
         max-width: 75%;
+        white-space: pre-wrap;
     }
 </style>
