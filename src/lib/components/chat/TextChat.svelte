@@ -11,8 +11,8 @@
     /**
      * @param {KeyboardEvent} event
      */
-    function handleKey(event) {
-        if(event.key === 'Enter' && event.ctrlKey && $sendEnabled) handleSend();
+    function handleKeyUp(event) {
+        if(event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && $sendEnabled) handleSend();
     }
 
     function handleSend() {
@@ -42,10 +42,10 @@
         </div>
     </div>
 
-    <textarea placeholder="Message" bind:value={msgText} on:keyup={handleKey}></textarea>
+    <textarea placeholder="Message" bind:value={msgText} on:keyup={handleKeyUp}></textarea>
 
     <div id="send-area">
-        <kbd>Ctrl + Enter</kbd>
+        <kbd>Enter</kbd>
         <button on:click={handleSend} disabled={!$sendEnabled}>Send</button>
     </div>
 </div>
