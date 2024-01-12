@@ -1,8 +1,11 @@
+import adapter from 'webrtc-adapter';
 import { firebaseConfig } from './firebase-config';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, addDoc, collection, serverTimestamp, deleteDoc, doc, onSnapshot, Timestamp, setDoc, updateDoc, getDoc, arrayUnion, query, where, getDocs, writeBatch, arrayRemove, or } from 'firebase/firestore';
 import { inRoom, localDisplayStream, localStream, messages, remoteStreamInfos, remoteStreams, roomId, screenShareEnabled, sendEnabled, streamConstraints, username } from './stores';
 import { get } from 'svelte/store';
+
+console.log(adapter); //// TODO: Is the adapter actually functioning?
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
