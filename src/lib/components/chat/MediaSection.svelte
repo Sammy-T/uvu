@@ -1,29 +1,31 @@
 <script>
     import Video from './media/Video.svelte';
-    import { localDisplayStream, localStream, remoteStreams } from '$lib/stores';
+    import { localDisplayStream, localStream, localStreamType, remoteStreams } from '$lib/stores';
     import { writable } from 'svelte/store';
     import { setContext } from 'svelte';
 
-    const media = writable([]);
-    setContext('media', media);
+    const mediaStreams = writable([]);
+    setContext('media', mediaStreams);
 
     $: updateMedia([$localStream, $localDisplayStream, $remoteStreams]);
 
     function updateMedia(placeholder) {
         const m = [];
 
-        if($localStream) m.push($localStream);
+        if($localStream && $localStreamType === 'video') m.push($localStream);
         if($localDisplayStream) m.push($localDisplayStream);
 
-        m.push(...$remoteStreams);
-        console.log('media', m);
+        const rStreams = $remoteStreams.filter(s => s.getTracks().some(t => t.kind === 'video'));
 
-        $media = m;
+        m.push(...rStreams);
+        console.log('video', m);
+
+        $mediaStreams = m;
     }
 </script>
 
 <div id="media-container">
-    {#each $media as stream (stream.id)}
+    {#each $mediaStreams as stream (stream.id)}
         <Video mediaItem={stream} />
     {/each}
 </div>

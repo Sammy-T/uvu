@@ -5,9 +5,15 @@
     import TextChat from '$lib/components/chat/TextChat.svelte';
     import MediaSection from '$lib/components/chat/MediaSection.svelte';
     import AudioSection from '$lib/components/chat/AudioSection.svelte';
-    import { localDisplayStream, localStream, remoteStreams, roomId, username } from '$lib/stores';
+    import { localDisplayStream, localStream, localStreamType, remoteStreams, roomId, username } from '$lib/stores';
 
     $: updateHash([$roomId]);
+
+    $: hasRemoteVideo = $remoteStreams.some(s => s.getTracks().some(t => t.kind === 'video'));
+    $: hasRemoteAudio = $remoteStreams.some(s => {
+        const tracks = s.getTracks();
+        return tracks.length === 1 && tracks.some(t => t.kind === 'audio');
+    });
 
     function updateHash(placeholder) {
         if(!$roomId) return;
@@ -31,7 +37,7 @@
 
 <main id="chat-container" class="container-fluid">
     <div id="main-container">
-        {#if $localStream || $localDisplayStream || $remoteStreams.length > 0}
+        {#if ($localStream && $localStreamType === 'video') || $localDisplayStream || hasRemoteVideo}
             <MediaSection />
         {/if}
 
@@ -42,7 +48,9 @@
         {/if}
     </div>
 
-    <AudioSection />
+    {#if ($localStream && $localStreamType === 'audio') || hasRemoteAudio}
+        <AudioSection />
+    {/if}
 </main>
 
 <style>

@@ -8,6 +8,7 @@ export const screenShareEnabled = writable(false);
 export const messages = writable([]);
 export const streamConstraints = writable({video: false, audio: false});
 export const localStream = writable();
+export const localStreamType = writable('');
 export const localDisplayStream = writable();
 export const remoteStreams = writable([]);
 export const remoteStreamInfos = writable([]);

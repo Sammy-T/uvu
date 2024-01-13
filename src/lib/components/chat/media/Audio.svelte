@@ -1,17 +1,26 @@
 <script>
+    import { username, localStream, remoteStreamInfos } from '$lib/stores';
     import { onMount } from 'svelte';
 
     export let mediaItem;
 
+    let user;
     let audio;
 
     onMount(() => {
         audio.srcObject = mediaItem;
+
+        if(mediaItem.id === $localStream?.id) {
+            user = $username;
+        } else {
+            const info = $remoteStreamInfos.find(s => s.streamId === mediaItem.id);
+            user = info?.username ?? '';
+        }
     });
 </script>
 
 <div class="audio-container">
-    <p><small>username</small></p>
+    <p><small>{user}</small></p>
     <audio controls autoplay muted bind:this={audio} />
 </div>
 
