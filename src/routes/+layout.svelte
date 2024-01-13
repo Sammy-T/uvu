@@ -1,7 +1,11 @@
 <script>
-    import "../app.scss";
-    import Analytics from "$lib/components/Analytics.svelte";
+    import '../app.scss';
+    import { dev } from '$app/environment';
+    import Analytics from '$lib/components/Analytics.svelte';
 </script>
 
-<Analytics />
+{#if !dev}
+    <Analytics />
+{/if}
+
 <slot></slot>
