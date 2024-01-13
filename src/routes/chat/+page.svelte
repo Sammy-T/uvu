@@ -3,10 +3,17 @@
     import ChatActions from '$lib/components/chat/ChatActions.svelte';
     import UsernameInput from '$lib/components/chat/UsernameInput.svelte';
     import TextChat from '$lib/components/chat/TextChat.svelte';
-    import MediaContainer from '$lib/components/chat/MediaContainer.svelte';
-    import { localDisplayStream, localStream, remoteStreams, roomId, username } from '$lib/stores';
+    import MediaSection from '$lib/components/chat/MediaSection.svelte';
+    import AudioSection from '$lib/components/chat/AudioSection.svelte';
+    import { localDisplayStream, localStream, localStreamType, remoteStreams, roomId, username } from '$lib/stores';
 
     $: updateHash([$roomId]);
+
+    $: hasRemoteVideo = $remoteStreams.some(s => s.getTracks().some(t => t.kind === 'video'));
+    $: hasRemoteAudio = $remoteStreams.some(s => {
+        const tracks = s.getTracks();
+        return tracks.length === 1 && tracks.some(t => t.kind === 'audio');
+    });
 
     function updateHash(placeholder) {
         if(!$roomId) return;
@@ -28,15 +35,21 @@
     <div></div>
 </nav>
 
-<main id="main-container" class="container-fluid">
-    {#if $localStream || $localDisplayStream || $remoteStreams.length > 0}
-        <MediaContainer />
-    {/if}
+<main id="chat-container" class="container-fluid">
+    <div id="main-container">
+        {#if ($localStream && $localStreamType === 'video') || $localDisplayStream || hasRemoteVideo}
+            <MediaSection />
+        {/if}
 
-    {#if !$username}
-        <UsernameInput />
-    {:else}
-        <TextChat />
+        {#if !$username}
+            <UsernameInput />
+        {:else}
+            <TextChat />
+        {/if}
+    </div>
+
+    {#if ($localStream && $localStreamType === 'audio') || hasRemoteAudio}
+        <AudioSection />
     {/if}
 </main>
 
@@ -49,9 +62,15 @@
         align-items: center;
     }
 
-    #main-container {
+    #chat-container {
         min-height: 100vh;
         padding: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #main-container {
+        flex-grow: 1;
         display: flex;
         flex-direction: column;
         justify-content: center;

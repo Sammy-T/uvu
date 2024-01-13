@@ -2,7 +2,7 @@ import adapter from 'webrtc-adapter';
 import { firebaseConfig } from './firebase-config';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, addDoc, collection, serverTimestamp, deleteDoc, doc, onSnapshot, Timestamp, setDoc, updateDoc, getDoc, arrayUnion, query, where, getDocs, writeBatch, arrayRemove, or } from 'firebase/firestore';
-import { inRoom, localDisplayStream, localStream, messages, remoteStreamInfos, remoteStreams, roomId, screenShareEnabled, sendEnabled, streamConstraints, username } from './stores';
+import { inRoom, localDisplayStream, localStream, localStreamType, messages, remoteStreamInfos, remoteStreams, roomId, screenShareEnabled, sendEnabled, streamConstraints, username } from './stores';
 import { get } from 'svelte/store';
 
 console.log(adapter); //// TODO: Is the adapter actually functioning?
@@ -493,7 +493,7 @@ function registerDataChannelListeners(participant, dataChannel) {
 
         dataChannel.send(JSON.stringify(message));
 
-        sendStreamInfo(participant, 'media', localStream);
+        sendStreamInfo(participant, get(localStreamType), localStream);
         sendStreamInfo(participant, 'display', localDisplayStream);
 
         if(!get(sendEnabled)) sendEnabled.set(true);
@@ -670,11 +670,15 @@ function processSystemMsg(participant, message) {
 export async function startStream() {
     if(get(localStream)) return;
 
-    const stream = await navigator.mediaDevices.getUserMedia(get(streamConstraints));
+    const constraints = get(streamConstraints);
+    const streamType = (constraints.audio && !constraints.video) ? 'audio' : 'video';
+
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
     localStream.set(stream);
+    localStreamType.set(streamType);
 
     for(const participant in dataChannels) {
-        sendStreamInfo(participant, 'media', localStream);
+        sendStreamInfo(participant, streamType, localStream);
 
         const peerConnection = peerConnections[participant];
         stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
