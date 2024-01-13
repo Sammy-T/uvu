@@ -3,7 +3,7 @@
     import ChatActions from '$lib/components/chat/ChatActions.svelte';
     import UsernameInput from '$lib/components/chat/UsernameInput.svelte';
     import TextChat from '$lib/components/chat/TextChat.svelte';
-    import MediaContainer from '$lib/components/chat/MediaContainer.svelte';
+    import MediaSection from '$lib/components/chat/MediaSection.svelte';
     import { localDisplayStream, localStream, remoteStreams, roomId, username } from '$lib/stores';
 
     $: updateHash([$roomId]);
@@ -30,8 +30,8 @@
 
 <main id="main-container" class="container-fluid">
     {#if $localStream || $localDisplayStream || $remoteStreams.length > 0}
-        <MediaContainer />
     {/if}
+            <MediaSection />
 
     {#if !$username}
         <UsernameInput />
