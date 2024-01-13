@@ -4,6 +4,7 @@
     import UsernameInput from '$lib/components/chat/UsernameInput.svelte';
     import TextChat from '$lib/components/chat/TextChat.svelte';
     import MediaSection from '$lib/components/chat/MediaSection.svelte';
+    import AudioSection from '$lib/components/chat/AudioSection.svelte';
     import { localDisplayStream, localStream, remoteStreams, roomId, username } from '$lib/stores';
 
     $: updateHash([$roomId]);
@@ -28,16 +29,20 @@
     <div></div>
 </nav>
 
-<main id="main-container" class="container-fluid">
-    {#if $localStream || $localDisplayStream || $remoteStreams.length > 0}
-    {/if}
+<main id="chat-container" class="container-fluid">
+    <div id="main-container">
+        {#if $localStream || $localDisplayStream || $remoteStreams.length > 0}
             <MediaSection />
+        {/if}
 
-    {#if !$username}
-        <UsernameInput />
-    {:else}
-        <TextChat />
-    {/if}
+        {#if !$username}
+            <UsernameInput />
+        {:else}
+            <TextChat />
+        {/if}
+    </div>
+
+    <AudioSection />
 </main>
 
 <style>
@@ -49,9 +54,15 @@
         align-items: center;
     }
 
-    #main-container {
+    #chat-container {
         min-height: 100vh;
         padding: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #main-container {
+        flex-grow: 1;
         display: flex;
         flex-direction: column;
         justify-content: center;
