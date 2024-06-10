@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
-    "deploy": "npm run build && firebase deploy --only hosting"
+    "predeploy": "npm run build",
+    "deploy": "firebase deploy --only hosting"
   },
   "devDependencies": {
     "@picocss/pico": "^1.5.10",
