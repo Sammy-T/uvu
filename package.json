@@ -24,6 +24,6 @@
     "svelte-check": "^3.6.0",
     "typescript": "^5.0.0",
     "vite": "^5.0.13",
-    "webrtc-adapter": "^8.2.3"
+    "webrtc-adapter": "^9.0.1"
   }
 }
