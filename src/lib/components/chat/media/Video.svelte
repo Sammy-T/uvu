@@ -14,7 +14,7 @@
 
 <div class="video-container" class:limit-height={$media.length > 1} class:limit-width={$media.length > 2}>
     <!-- svelte-ignore a11y-media-has-caption -->
-    <video controls autoplay muted bind:this={video} />
+    <video controls autoplay muted bind:this={video}></video>
 </div>
 
 <style>

@@ -21,7 +21,7 @@
 
 <div class="audio-container">
     <p><small>{user}</small></p>
-    <audio controls autoplay muted bind:this={audio} />
+    <audio controls autoplay muted bind:this={audio}></audio>
 </div>
 
 <style>
