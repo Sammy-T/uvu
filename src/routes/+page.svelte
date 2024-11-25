@@ -22,18 +22,20 @@
         <h4>Uvu rooms are no sign-up, single-serving sessions featuring..</h4>
 
         <table>
-            <tr>
-                <td>{@html videoIc}</td>
-                <td>Video and audio conferencing</td>
-            </tr>
-            <tr>
-                <td>{@html screenIc}</td>
-                <td>Screen sharing</td>
-            </tr>
-            <tr>
-                <td>{@html chatIc}</td>
-                <td>Text chat</td>
-            </tr>
+            <tbody>
+                <tr>
+                    <td>{@html videoIc}</td>
+                    <td>Video and audio conferencing</td>
+                </tr>
+                <tr>
+                    <td>{@html screenIc}</td>
+                    <td>Screen sharing</td>
+                </tr>
+                <tr>
+                    <td>{@html chatIc}</td>
+                    <td>Text chat</td>
+                </tr>
+            </tbody>
         </table>
     </section>
 </main>
