@@ -17,7 +17,7 @@
     "@picocss/pico": "^1.5.13",
     "@sveltejs/adapter-auto": "^3.2.4",
     "@sveltejs/adapter-static": "^3.0.4",
-    "@sveltejs/kit": "^2.5.25",
+    "@sveltejs/kit": "^2.8.3",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
     "firebase": "^10.13.1",
     "sass": "^1.77.8",
