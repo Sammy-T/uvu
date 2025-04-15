@@ -18,13 +18,13 @@
     "@sveltejs/adapter-auto": "^3.3.1",
     "@sveltejs/adapter-static": "^3.0.6",
     "@sveltejs/kit": "^2.20.6",
-    "@sveltejs/vite-plugin-svelte": "^4.0.2",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "firebase": "^11.0.2",
     "sass": "^1.81.0",
     "svelte": "^5.2.8",
     "svelte-check": "^4.1.0",
     "typescript": "^5.7.2",
-    "vite": "^5.4.11",
+    "vite": "^6.2.6",
     "webrtc-adapter": "^9.0.1"
   }
 }
