@@ -1,3 +1,5 @@
+allowBuilds:
+  protobufjs: true
 onlyBuiltDependencies:
   - '@firebase/util'
   - '@parcel/watcher'
