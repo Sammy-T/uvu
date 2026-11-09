@@ -16,15 +16,15 @@
   "devDependencies": {
     "@picocss/pico": "^1.5.13",
     "@sveltejs/adapter-auto": "^7.0.1",
-    "@sveltejs/adapter-static": "^3.0.10",
-    "@sveltejs/kit": "^2.70.2",
-    "@sveltejs/vite-plugin-svelte": "^7.2.0",
-    "firebase": "^12.17.1",
-    "sass": "^1.102.0",
-    "svelte": "^5.56.8",
-    "svelte-check": "^4.7.4",
+    "@sveltejs/adapter-static": "^3.0.11",
+    "@sveltejs/kit": "^2.70.4",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "firebase": "^12.19.0",
+    "sass": "^1.108.1",
+    "svelte": "^5.57.3",
+    "svelte-check": "^4.7.8",
     "typescript": "^7.0.2",
-    "vite": "^8.2.4",
+    "vite": "^8.3.6",
     "webrtc-adapter": "^9.0.6"
   }
 }
